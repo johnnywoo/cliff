@@ -7,29 +7,6 @@ require_once __DIR__.'/Config.php';
 require_once __DIR__.'/Parser.php';
 require_once __DIR__.'/Usage.php';
 
-/**
- * Problems:
- *
- * how to define this?
- * script --force cmd --force
- * with our current scheme it requires two nested branches, because options cannot be present before params
- * maybe subcommand($name, $config) to complement branch($config)?
- *
- * Todo:
- * config should accumulate info inside, so we can distinguish --force global from --force local
- * by going $global_config->get('force') and ->isset()
- *
- * specifying error code somewhere (it may be 2 for diff)
- *
- * completion
- *
- * helpers:
- * color (like console_color)
- * read (char, string, password, stdin)
- * write (out, err, interface = skipped if not tty, table)
- */
-
-
 class Cliff
 {
 	/**

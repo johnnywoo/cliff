@@ -43,7 +43,7 @@ class Config
 	 *
 	 * See Config class docblock about $props.
 	 *
-	 * If is_array prop is set to true, cliff will grab each argument that passes validation
+	 * If is_array prop is set to true, Cliff will grab each argument that passes validation
 	 * (this means all of them if there is no validator given). If there is no valid param,
 	 * an error will happen.
 	 *
@@ -152,14 +152,6 @@ class Config
 		return $this;
 	}
 
-	protected function add_option_alias($name, $alias)
-	{
-		if(isset($this->option_name_aliases[$alias]))
-			throw new Exception('Config error: trying to readd option '.$alias, Exception::E_CONFIG_ERROR);
-
-		$this->option_name_aliases[$alias] = $name;
-	}
-
 	/**
 	 * Registers an option which can be set many times
 	 *
@@ -217,6 +209,14 @@ class Config
 
 	public $description = '';
 
+
+	protected function add_option_alias($name, $alias)
+	{
+		if(isset($this->option_name_aliases[$alias]))
+			throw new Exception('Config error: trying to readd option '.$alias, Exception::E_CONFIG_ERROR);
+
+		$this->option_name_aliases[$alias] = $name;
+	}
 
 	public function load_from_parser(Parser $parser)
 	{
