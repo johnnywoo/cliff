@@ -3,9 +3,10 @@
 Cliff allows you to write CLI scripts in PHP with comfort.
 The main features are:
 
-  * Arguments/options parser with validation
+  * Arguments/options parser
   * Usage and help generation
   * Terse chained-call configuration syntax
+  * Validation and callbacks for args
   * Exception handling
 
 The basic idea of Cliff is to allow you to work with CLI arguments exactly the same way
@@ -68,9 +69,13 @@ The only thing Cliff requires is PHP 5.3.
 
 If you don't mind, I'll leave this todo list here.
 
-  * Modifying option values and params via callbacks
+  * [+] Modifying option values and params via validator callbacks
   * Ability to design complex subcommand structures via branches and subcommands
     (to distinguish branches we can just forbid two consequent branches with no params)
+  * A way to specify optional parameters
+  * A way to specify required options and options that require a value but provide default one
+    (maybe separate options and flags?)
+  * Allow a string instead of $props array
   * Bash completion for options and params
   * Special class for argument-related exceptions, so we can show usage only for those
   * Helper for colors

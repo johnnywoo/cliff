@@ -13,12 +13,23 @@ namespace cliff;
  * are preserved, single line breaks are not.
  *
  * Non-numeric keys may be:
- *  * name:      (for options) name for $_REQUEST, if you don't like the default one
- *  * is_array:  if true, the param/option is allowed to be present in request multiple times,
- *               and all values are accumulated in an array
- *  * validator: a regexp or callback
- *  * callback:  will be called when the entity is found in script arguments
- *  * complete:  a callback for tab-completion
+ *
+ *  * name:      (for options) Name for $_REQUEST, if you don't like the default one.
+ *
+ *  * is_array:  If true, the param/option is allowed to be present in request multiple times,
+ *               and all values are accumulated in an array.
+ *
+ *  * validator: A regexp or callback (which is called with reference to value as first argument
+ *               and should return bool); callback will be called immediately after the value is
+ *               parsed from script arguments, so $_REQUEST will not be filled yet.
+ *               For array options/params the callback will be called for each element of the array.
+ *               WARNING: the callback receives a reference to value as its argument!
+ *               Even if your callback is defined as function($value){} with no reference,
+ *               $value is still a reference there and changing it will affect $_REQUEST.
+ *
+ *  * callback:  Will be called if the entity is found in script arguments (after all arguments
+ *               are parsed and $_REQUEST is filled); this callback does not receive any arguments.
+ *               For array options/params the callback will be called for each element of the array.
  */
 class Config
 {
@@ -100,8 +111,8 @@ class Config
 	 * option argument is treated as a param.
 	 *
 	 * Options themselves are not positional, that is, they do not need to be
-	 * specified in order they are declared (as opposed to params, which are
-	 * positional).
+	 * specified in script aruments in order they are declared (as opposed to
+	 * params, which are positional).
 	 *
 	 * See Config class docblock about $props.
 	 *
@@ -148,6 +159,8 @@ class Config
 		$props['name']    = $main_name;
 		$props['default'] = $default;
 		$this->options[$main_name] = $props;
+
+		$this->option_values[$main_name] = $props['default'];
 
 		return $this;
 	}
@@ -209,6 +222,8 @@ class Config
 
 	public $description = '';
 
+	protected $callbacks = array();
+
 
 	protected function add_option_alias($name, $alias)
 	{
@@ -225,13 +240,10 @@ class Config
 		while($item = $parser->read($this->short_options_with_values))
 		{
 			if($item['type'] == Parser::TYPE_OPTION)
-				$props = $this->register_option($item);
+				$this->register_option($item);
 
 			if($item['type'] == Parser::TYPE_PARAM)
-				$props = $this->register_param($item, $params_stack);
-
-			if(!empty($props['callback']) && is_callable($props['callback']))
-				call_user_func($props['callback']);
+				$this->register_param($item, $params_stack);
 		}
 
 		if(!empty($params_stack))
@@ -260,6 +272,8 @@ class Config
 		if(!$this->validate($value, $option))
 			throw new Exception('Incorrect value for '.$item['name'], Exception::E_NO_OPTION_VALUE);
 
+		$this->register_callback($option, $item['name']);
+
 		if(!empty($option['is_array']))
 			$this->option_values[$name][] = $value;
 		else
@@ -276,14 +290,16 @@ class Config
 		$name = reset($params_stack);
 		$param = $this->params[$name];
 
-		$is_valid = $this->validate($item['value'], $param);
+		$value = $item['value'];
+
+		$is_valid = $this->validate($value, $param);
 		if(!empty($param['is_array']))
 		{
 			if(!$is_valid)
 			{
 				// array needs one or more values
 				if(empty($this->param_values[$name]))
-					throw new Exception('Unexpected "'.$item['value'].'" in place of '.$name, Exception::E_WRONG_PARAM);
+					throw new Exception('Unexpected "'. $value .'" in place of '.$name, Exception::E_WRONG_PARAM);
 
 				// okay, now it is not valid, but there is something in the array
 				// so we just continue to the next arg
@@ -291,16 +307,18 @@ class Config
 				return $this->register_param($item, $params_stack);
 			}
 
-			$this->param_values[$name][] = $item['value'];
+			$this->param_values[$name][] = $value;
 		}
 		else
 		{
 			if(!$is_valid)
-				throw new Exception('Unexpected "'.$item['value'].'" in place of '.$name, Exception::E_WRONG_PARAM);
+				throw new Exception('Unexpected "'. $value .'" in place of '.$name, Exception::E_WRONG_PARAM);
 
-			$this->param_values[$name] = $item['value'];
+			$this->param_values[$name] = $value;
 			array_shift($params_stack);
 		}
+
+		$this->register_callback($param, $name);
 
 		return $param;
 	}
@@ -315,19 +333,52 @@ class Config
 		return $request;
 	}
 
-	protected function validate($value, $props)
+	protected function validate(&$value, $props)
 	{
 		if(isset($props['validator']))
 		{
 			$validator = $props['validator'];
 
 			if(is_callable($validator))
-				return call_user_func($validator, $value);
+				return call_user_func_array($validator, array(&$value));
 
 			if(is_string($validator) && !preg_match($validator, $value))
 				return false;
 		}
 		return true;
+	}
+
+	/**
+	 * Registers a callback for later calling
+	 *
+	 * Callbacks are called after all arguments are parsed,
+	 * so we need to accumulate them and then call later.
+	 *
+	 * @param array $props
+	 * @param string $item_desc
+	 */
+	protected function register_callback($props, $item_desc = '')
+	{
+		if(!empty($props['callback']))
+			$this->callbacks[] = array($props['callback'], $item_desc);
+	}
+
+	/**
+	 * Runs appropriate callbacks for options and params
+	 *
+	 * We need to call this when $_REQUEST is already filled with values,
+	 * so this call is done externally.
+	 */
+	public function run_callbacks()
+	{
+		foreach($this->callbacks as $row)
+		{
+			list($cb, $desc) = $row;
+			if(!is_callable($cb))
+				throw new Exception('Non-callable callback for '.$desc);
+
+			call_user_func($cb);
+		}
 	}
 
 	public function get_options_with_aliases()

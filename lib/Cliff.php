@@ -47,6 +47,7 @@ class Cliff
 		{
 			$_REQUEST[$k] = $v;
 		}
+		$config->run_callbacks();
 	}
 
 	protected static function add_default_options(Config $config)
@@ -55,7 +56,7 @@ class Cliff
 		{
 			$config->option('--help', true, array(
 				'Show descriptions of options and params',
-				'callback' => function() use($config) {
+				'validator' => function() use($config) {
 					$usage = new Usage($config);
 					$usage->long_descriptions = true;
 					echo $usage->make();

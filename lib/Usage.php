@@ -13,6 +13,8 @@ class Usage
 	public $term_padding_left  = 2;
 	public $term_padding_right = 2;
 
+	public $max_options_listed = 5;
+
 	public $long_descriptions = false;
 
 	public function __construct(Config $config)
@@ -58,7 +60,7 @@ class Usage
 			}
 			if($short_options)
 				$usage .= ' [-' . $short_options . ']';
-			$usage .= count($aliases) > 3 ? ' [options]' : ' [' . join('] [', $aliases) . ']';
+			$usage .= count($aliases) > $this->max_options_listed ? ' [options]' : ' [' . join('] [', $aliases) . ']';
 		}
 
 		foreach($this->config->params as $name=>$param)

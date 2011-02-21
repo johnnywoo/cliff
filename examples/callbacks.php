@@ -1,0 +1,61 @@
+<?php
+
+/**
+ * Example config: a basic issue tracker fetcher interface
+ *
+ */
+
+require_once __DIR__.'/../lib/Cliff.php';
+use \cliff\Cliff;
+
+Cliff::run(
+	Cliff::config()
+	->desc('Describes issues from an issue tracker')
+	->option('--version -v', true, array(
+		'Output version info',
+		'validator' => function(&$value) {
+			// Validation callback is called immediately when --list (or -l) is read
+			// from script arguments, before parsing is done completely.
+			// So we can ignore the rest of arguments by exiting the script here.
+			echo "Powerful Issue Describer version 1.0.0\n";
+			exit;
+		},
+	))
+	->option('--issue -i', false, array(
+		'Narrow the list by ID or a branch name
+		Let\'s say we have the following git branch naming convention:
+		author_1234_description
+		where 1234 is our issue ID. We can support this format transparently
+		by modifying the parameter from the validation callback.',
+		'validator' => function(&$value) {
+			// we have $value by reference here, and therefore can modify it
+			if(preg_match('/^[^_]+_(\d+)/', $value, $m))
+				$value = $m[1];
+			return is_numeric($value);
+		},
+	))
+	->option('--tracker', 'http://example.com/default-tracker', array('Tracker URL'))
+	->option('--clean-cache', true, array(
+		'Clean issue cache before fetching data',
+		'callback' => function() {
+			// here we can use $_REQUEST to clean the appropriate cache
+			echo "Cleaned cache for ".$_REQUEST['tracker']."\n";
+		}
+	))
+);
+
+/**
+ * We have modified this value in the validation callback, so even if
+ * the script is called with a branch name instead of issue ID, the
+ * issue variable here will be numeric ID.
+ */
+$issue = $_REQUEST['issue'];
+if($issue)
+	echo "One issue info requested: issue ID $issue\n";
+else
+	echo "All issues info requested\n";
+
+echo "Tracker URL is ".$_REQUEST['tracker']."\n";
+
+// Note that we didn't add params in our config, so the script
+// will not display usage if called with no arguments.
