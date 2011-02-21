@@ -71,7 +71,7 @@ class Parser
 					else // -x VALUE
 					{
 						if(count($this->args) == 0)
-							throw new Exception('No value for -'.$letter, Exception::E_NO_OPTION_VALUE);
+							throw new Exception_ParseError('No value for -'.$letter, Exception_ParseError::E_NO_OPTION_VALUE);
 
 						$value = array_shift($this->args);
 					}

@@ -70,6 +70,7 @@ The only thing Cliff requires is PHP 5.3.
 If you don't mind, I'll leave this todo list here.
 
   * [+] Modifying option values and params via validator callbacks
+  * [+] Special class for argument-related exceptions, so we can show usage only for those
   * Ability to design complex subcommand structures via branches and subcommands
     (to distinguish branches we can just forbid two consequent branches with no params)
   * A way to specify optional parameters
@@ -77,10 +78,12 @@ If you don't mind, I'll leave this todo list here.
     (maybe separate options and flags?)
   * Allow a string instead of $props array
   * Bash completion for options and params
-  * Special class for argument-related exceptions, so we can show usage only for those
   * Helper for colors
   * Helper for reading (char, string, password, stdin)
   * Helper for writing (out, err, interface = skipped if not tty, table)
   * Adopting external commands as subcommands
   * Adopting external Cliff scripts as subcommands with usage/completion import
   * Specifying default error exit code somewhere (for grep-like exit codes)
+  * Non-config mode: aggregate all provided options and store all params into $_REQUEST['args'],
+    no validation or anything; could be useful for tmp scripts (hack a tool together with no design
+    planning and then, when it matures, configure it for usage and completion)

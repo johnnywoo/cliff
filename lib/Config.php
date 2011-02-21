@@ -68,7 +68,7 @@ class Config
 			$name = $props['name'];
 
 		if(isset($this->params[$name]) || isset($this->options[$name]))
-			throw new Exception('Config error: duplicate name '.$name, Exception::E_CONFIG_ERROR);
+			throw new Exception('Config error: duplicate name '.$name);
 
 		$this->params[$name] = $props;
 
@@ -125,12 +125,12 @@ class Config
 	{
 		$names = preg_split('/\s+/', $name, -1, PREG_SPLIT_NO_EMPTY);
 		if(empty($names))
-			throw new Exception('Config error: wrong option name definition "'.$name.'"', Exception::E_CONFIG_ERROR);
+			throw new Exception('Config error: wrong option name definition "'.$name.'"');
 
 		$main_name = empty($props['name']) ? ltrim(reset($names), '-') : $props['name'];
 
 		if(isset($this->params[$main_name]) || isset($this->options[$main_name]))
-			throw new Exception('Config error: duplicate name '.$main_name, Exception::E_CONFIG_ERROR);
+			throw new Exception('Config error: duplicate name '.$main_name);
 
 		foreach($names as $n)
 		{
@@ -152,7 +152,7 @@ class Config
 			}
 			else
 			{
-				throw new Exception('Config error: wrong option name "'.$n.'"', Exception::E_CONFIG_ERROR);
+				throw new Exception('Config error: wrong option name "'.$n.'"');
 			}
 		}
 
@@ -228,7 +228,7 @@ class Config
 	protected function add_option_alias($name, $alias)
 	{
 		if(isset($this->option_name_aliases[$alias]))
-			throw new Exception('Config error: trying to readd option '.$alias, Exception::E_CONFIG_ERROR);
+			throw new Exception('Config error: trying to readd option '.$alias);
 
 		$this->option_name_aliases[$alias] = $name;
 	}
@@ -252,25 +252,25 @@ class Config
 			// it is array and there is something in it already
 			$name = reset($params_stack);
 			if(count($params_stack) > 1 || empty($this->params[$name]['is_array']) || !isset($this->param_values[$name]))
-				throw new Exception('Need more arguments', Exception::E_NO_PARAM);
+				throw new Exception_ParseError('Need more arguments', Exception_ParseError::E_NO_PARAM);
 		}
 	}
 
 	protected function register_option($item)
 	{
 		if(!isset($this->option_name_aliases[$item['name']]))
-			throw new Exception('Unknown option '.$item['name'], Exception::E_WRONG_OPTION);
+			throw new Exception_ParseError('Unknown option '.$item['name'], Exception_ParseError::E_WRONG_OPTION);
 
 		$name = $this->option_name_aliases[$item['name']];
 		$option = $this->options[$name];
 
 		if(is_null($option['default']) && is_null($item['value']))
-			throw new Exception('No value for '.$item['name'], Exception::E_NO_OPTION_VALUE);
+			throw new Exception_ParseError('No value for '.$item['name'], Exception_ParseError::E_NO_OPTION_VALUE);
 
 		$value = is_null($item['value']) ? $option['default'] : $item['value'];
 
 		if(!$this->validate($value, $option))
-			throw new Exception('Incorrect value for '.$item['name'], Exception::E_NO_OPTION_VALUE);
+			throw new Exception_ParseError('Incorrect value for '.$item['name'], Exception_ParseError::E_NO_OPTION_VALUE);
 
 		$this->register_callback($option, $item['name']);
 
@@ -285,7 +285,7 @@ class Config
 	protected function register_param($item, &$params_stack)
 	{
 		if(empty($params_stack))
-			throw new Exception('Too many arguments', Exception::E_TOO_MANY_PARAMS);
+			throw new Exception_ParseError('Too many arguments', Exception_ParseError::E_TOO_MANY_PARAMS);
 
 		$name = reset($params_stack);
 		$param = $this->params[$name];
@@ -299,7 +299,7 @@ class Config
 			{
 				// array needs one or more values
 				if(empty($this->param_values[$name]))
-					throw new Exception('Unexpected "'. $value .'" in place of '.$name, Exception::E_WRONG_PARAM);
+					throw new Exception_ParseError('Unexpected "'. $value .'" in place of '.$name, Exception_ParseError::E_WRONG_PARAM);
 
 				// okay, now it is not valid, but there is something in the array
 				// so we just continue to the next arg
@@ -312,7 +312,7 @@ class Config
 		else
 		{
 			if(!$is_valid)
-				throw new Exception('Unexpected "'. $value .'" in place of '.$name, Exception::E_WRONG_PARAM);
+				throw new Exception_ParseError('Unexpected "'. $value .'" in place of '.$name, Exception_ParseError::E_WRONG_PARAM);
 
 			$this->param_values[$name] = $value;
 			array_shift($params_stack);

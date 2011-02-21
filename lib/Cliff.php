@@ -3,6 +3,7 @@
 namespace cliff;
 
 require_once __DIR__.'/Exception.php';
+require_once __DIR__.'/Exception/ParseError.php';
 require_once __DIR__.'/Config.php';
 require_once __DIR__.'/Parser.php';
 require_once __DIR__.'/Usage.php';
@@ -22,19 +23,22 @@ class Cliff
 		// set exception handler
 		set_exception_handler(function(\Exception $e) use($config) {
 
-			// do not show error about required param when there is no args
+			// do not show error about required param when there is no args (there will be usage)
 			$skip_error_message = false;
-			if($e instanceof Exception)
+			if($e instanceof Exception_ParseError)
 			{
-				if($e->getCode() == Exception::E_NO_PARAM && count($_SERVER['argv']) == 1)
+				if($e->getCode() == Exception_ParseError::E_NO_PARAM && count($_SERVER['argv']) == 1)
 					$skip_error_message = true;
 			}
 			if(!$skip_error_message)
 				fwrite(STDERR, $e->getMessage()."\n\n");
 
-			// show usage
-			$usage = new Usage($config);
-			fwrite(STDERR, $usage->make());
+			if($e instanceof Exception_ParseError)
+			{
+				// show usage
+				$usage = new Usage($config);
+				fwrite(STDERR, $usage->make());
+			}
 
 			exit(1);
 		});
