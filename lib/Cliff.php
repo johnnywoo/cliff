@@ -36,12 +36,15 @@ class Cliff
 					$skip_error_message = true;
 			}
 			if(!$skip_error_message)
-				fwrite(STDERR, $e->getMessage()."\n\n");
+				fwrite(STDERR, $e->getMessage()."\n");
 
 			if($e instanceof Exception_ParseError)
 			{
 				// show usage
 				$usage = new Usage($config);
+
+				if(!$skip_error_message)
+					echo "\n";
 				fwrite(STDERR, $usage->make());
 			}
 
