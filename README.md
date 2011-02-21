@@ -61,6 +61,11 @@ parameters. 'Parameter' in Cliff means any non-option argument.
 
 Read phpdoc comments in `lib/Config.php` for all configuration possibilities.
 
+## NOTES
+
+To change error exit code (which is used when an uncaught exception occurs), you need to
+change Cliff::$error_exit_code. Default error exit code is 1.
+
 ## REQUIREMENTS
 
 The only thing Cliff requires is PHP 5.3.
@@ -71,6 +76,7 @@ If you don't mind, I'll leave this todo list here.
 
   * [+] Modifying option values and params via validator callbacks
   * [+] Special class for argument-related exceptions, so we can show usage only for those
+  * [+] Specifying default error exit code somewhere (for grep-like exit codes)
   * Ability to design complex subcommand structures via branches and subcommands
     (to distinguish branches we can just forbid two consequent branches with no params)
   * A way to specify optional parameters
@@ -83,7 +89,6 @@ If you don't mind, I'll leave this todo list here.
   * Helper for writing (out, err, interface = skipped if not tty, table)
   * Adopting external commands as subcommands
   * Adopting external Cliff scripts as subcommands with usage/completion import
-  * Specifying default error exit code somewhere (for grep-like exit codes)
   * Non-config mode: aggregate all provided options and store all params into $_REQUEST['args'],
     no validation or anything; could be useful for tmp scripts (hack a tool together with no design
     planning and then, when it matures, configure it for usage and completion)

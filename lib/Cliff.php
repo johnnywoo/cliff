@@ -11,6 +11,11 @@ require_once __DIR__.'/Usage.php';
 class Cliff
 {
 	/**
+	 * This exit code will be used if an uncaught exception occurs
+	 */
+	public static $error_exit_code = 1;
+
+	/**
 	 * A shortcut for `new Config` for easy chaining
 	 */
 	public static function config()
@@ -40,10 +45,10 @@ class Cliff
 				fwrite(STDERR, $usage->make());
 			}
 
-			exit(1);
+			exit(static::$error_exit_code);
 		});
 
-		self::add_default_options($config);
+		static::add_default_options($config);
 
 		// run
 		$config->load_from_parser(new Parser());
