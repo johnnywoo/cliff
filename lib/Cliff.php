@@ -2,6 +2,7 @@
 
 namespace cliff;
 
+// let's not affect autoload, we don't have too much files here
 require_once __DIR__.'/Exception.php';
 require_once __DIR__.'/Exception/ParseError.php';
 require_once __DIR__.'/Config.php';
@@ -48,7 +49,7 @@ class Cliff
 				fwrite(STDERR, $usage->make());
 			}
 
-			exit(static::$error_exit_code);
+			exit(Cliff::$error_exit_code);
 		});
 
 		static::add_default_options($config);
