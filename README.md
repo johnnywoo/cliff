@@ -1,4 +1,4 @@
-# Cliff — a CLI framework for PHP
+# Cliff â€” a CLI framework for PHP
 
 Cliff allows you to write CLI scripts in PHP with comfort.
 The main features are:
@@ -77,9 +77,10 @@ If you don't mind, I'll leave this todo list here.
   * [+] Modifying option values and params via validator callbacks
   * [+] Special class for argument-related exceptions, so we can show usage only for those
   * [+] Specifying default error exit code somewhere (for grep-like exit codes)
+  * Ability to specify default values for single-letter options
   * Ability to design complex subcommand structures via branches and subcommands
     (to distinguish branches we can just forbid two consequent branches with no params)
-  * A way to specify optional parameters
+  * A way to specify optional parameters (e.g. vmig db [table])
   * A way to specify required options and options that require a value but provide default one
     (maybe separate options and flags?)
   * Allow a string instead of $props array
