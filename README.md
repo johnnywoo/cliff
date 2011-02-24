@@ -93,3 +93,4 @@ If you don't mind, I'll leave this todo list here.
   * Non-config mode: aggregate all provided options and store all params into $_REQUEST['args'],
     no validation or anything; could be useful for tmp scripts (hack a tool together with no design
     planning and then, when it matures, configure it for usage and completion)
+  * Ability to store STDIN in a variable (is it possible to iterate over it instead?)
