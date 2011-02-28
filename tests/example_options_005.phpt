@@ -1,10 +1,10 @@
 --TEST--
-Options example: long options
+Options example: no options
 --ARGS--
---negate --multiply=7 --triple -- -2
+382
 --FILE--
 <?php
 include __DIR__ . '/../examples/options.php';
 ?>
 --EXPECT--
-42
+382
