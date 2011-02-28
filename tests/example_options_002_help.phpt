@@ -7,7 +7,7 @@ Options example: help
 include __DIR__ . '/../examples/options.php';
 ?>
 --EXPECT--
-Usage: example_options_001_help.php [-dtn] [options] <number>
+Usage: example_options_002_help.php [-dtn] [options] <number>
 
 Takes a number and multiplies it.
 
