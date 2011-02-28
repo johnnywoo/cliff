@@ -5,6 +5,17 @@ namespace cliff;
 /**
  * A config for CLI options and params
  *
+ * Config options:
+ * ->flag(names, props)         # <script> --verbose
+ * ->option(names, props)       # <script> --db=...
+ * ->many_options(names, props) # <script> --exclude file --exclude file2
+ * ->param(name, props)         # <script> file
+ * ->many_params(name, props)   # <script> file file2 file3
+ * ->desc(text)
+ *
+ * General props: is_array, validator, callback.
+ * Flag/option props: default, if_absent, is_required, name.
+ *
  *
  * ELEMENT PROPERTIES in $props:
  *
@@ -14,7 +25,7 @@ namespace cliff;
  *
  * Non-numeric keys may be:
  *
- *  * name:      (for options) Name for $_REQUEST, if you don't like the default one.
+ * (common preferences for flags, options and params)
  *
  *  * is_array:  If true, the param/option is allowed to be present in request multiple times,
  *               and all values are accumulated in an array.
@@ -30,6 +41,21 @@ namespace cliff;
  *  * callback:  Will be called if the entity is found in script arguments (after all arguments
  *               are parsed and $_REQUEST is filled); this callback does not receive any arguments.
  *               For array options/params the callback will be called for each element of the array.
+ *
+ * (preferences for flags and options)
+ *
+ *  * name:      Name for $_REQUEST, if you don't like the default one
+ *               (which is 'name' for --name and 'n' for -n).
+ *
+ *  * is_required  The option must be set in script arguments at least once.
+ *
+ *  * if_absent  Value for $_REQUEST if the option/flag was not present in script arguments.
+ *               Defaults to NULL for options and FALSE for flags.
+ *
+ *  * default    Value for $_REQUEST if the option/flag is present in script arguments
+ *               without a value (--x, but not --x=1). If default is not set or set NULL
+ *               for an option, that option will require a value, causing an error without it.
+ *               Defaults to TRUE for flags.
  */
 class Config
 {
@@ -92,18 +118,37 @@ class Config
 	}
 
 	/**
-	 * Registers an option (--x or -x)
+	 * Registers a flag (--x or -x)
+	 *
+	 * Flag is a no-value boolean kind of option, so everything works the same
+	 * way (see option() below).
+	 *
+	 * $_REQUEST will have TRUE if the flag is set in script arguments and
+	 * FALSE otherwise. Flags silently ignore attempts to give them values.
+	 *
+	 * See Config class docblock about $props.
+	 *
+	 * @param string $name
+	 * @param array  $props
+	 * @return Config self
+	 */
+	public function flag($name, $props = array())
+	{
+		$props['default']   = true;
+		$props['if_absent'] = false;
+		$props['_force_default_value'] = true;
+		return $this->option($name, $props);
+	}
+
+	/**
+	 * Registers an option (--x=1 or -x1)
 	 *
 	 * Name is a space-separated list of aliases, like this:
 	 * '--help -h? --omgwtf'
 	 * First alias with leading dashes stripped will be used as primary name.
-	 * You can also specify name in $props (useful for short options).
+	 * You can also specify name in $props (useful for single-letter options).
 	 *
 	 * '-h?' in the example above defines two single-letter aliases: -h and -?.
-	 *
-	 * If default is set to null, it means there is no default. Providing such
-	 * option without value will cause error. This means that with null you can
-	 * either do `script --x=value` or `script`, but not `script --x`.
 	 *
 	 * Options should be specified before first param (you can get over this
 	 * by using branches). There is also a special argument '--' (two dashes),
@@ -117,11 +162,10 @@ class Config
 	 * See Config class docblock about $props.
 	 *
 	 * @param string $name
-	 * @param mixed  $default
 	 * @param array  $props
-	 * @return Config
+	 * @return Config self
 	 */
-	public function option($name, $default = null, $props = array())
+	public function option($name, $props = array())
 	{
 		$names = preg_split('/\s+/', $name, -1, PREG_SPLIT_NO_EMPTY);
 		if(empty($names))
@@ -132,6 +176,15 @@ class Config
 		if(isset($this->params[$main_name]) || isset($this->options[$main_name]))
 			throw new Exception('Config error: duplicate name '.$main_name);
 
+		// props
+		if(!isset($props['default']))
+			$props['default'] = null;
+		if(!isset($props['if_absent']))
+			$props['if_absent'] = null;
+		$props['name'] = $main_name;
+		$props['_first_alias'] = reset($names);
+
+		// registering name aliases
 		foreach($names as $n)
 		{
 			if(preg_match('/^-[^-]/', $n))
@@ -142,7 +195,7 @@ class Config
 					$letter = substr($n, $i, 1);
 					$alias = '-'.$letter;
 					$this->add_option_alias($main_name, $alias);
-					if(is_null($default))
+					if(is_null($props['default']))
 						$this->short_options_with_values .= $letter;
 				}
 			}
@@ -156,11 +209,10 @@ class Config
 			}
 		}
 
-		$props['name']    = $main_name;
-		$props['default'] = $default;
 		$this->options[$main_name] = $props;
-
-		$this->option_values[$main_name] = null;
+		$this->option_values[$main_name] = $props['if_absent'];
+		if(!empty($props['is_required']))
+			$this->required_options[] = $main_name;
 
 		return $this;
 	}
@@ -174,7 +226,7 @@ class Config
 	 * @param string $name
 	 * @param mixed  $default
 	 * @param array  $props
-	 * @return Config
+	 * @return Config self
 	 */
 	public function many_options($name, $default = null, $props = array())
 	{
@@ -192,7 +244,7 @@ class Config
 	 * in it, one for each subcommand. A branch is just another Config object.
 	 *
 	 * @param Config $config
-	 * @return Config
+	 * @return Config self
 	 */
 	public function branch(Config $config)
 	{
@@ -212,6 +264,7 @@ class Config
 
 	public $option_name_aliases       = array();
 	public $options                   = array();
+	public $required_options          = array();
 	public $short_options_with_values = '';
 
 	public $param_values  = array();
@@ -235,12 +288,13 @@ class Config
 
 	public function load_from_parser(Parser $parser)
 	{
-		$params_stack = array_keys($this->params);
+		$params_stack     = array_keys($this->params);
+		$required_options = array_flip($this->required_options);
 
 		while($item = $parser->read($this->short_options_with_values))
 		{
 			if($item['type'] == Parser::TYPE_OPTION)
-				$this->register_option($item);
+				$this->register_option($item, $required_options);
 
 			if($item['type'] == Parser::TYPE_PARAM)
 				$this->register_param($item, $params_stack);
@@ -254,9 +308,19 @@ class Config
 			if(count($params_stack) > 1 || empty($this->params[$name]['is_array']) || !isset($this->param_values[$name]))
 				throw new Exception_ParseError('Need more arguments', Exception_ParseError::E_NO_PARAM);
 		}
+
+		if(!empty($required_options))
+		{
+			$list = array();
+			foreach($required_options as $name=>$foo)
+			{
+				$list[] = $this->options[$name]['_first_alias'];
+			}
+			throw new Exception_ParseError('Need value'.(count($list)>1?'s':'').' for '.join(', ', $list), Exception_ParseError::E_NO_OPTION);
+		}
 	}
 
-	protected function register_option($item)
+	protected function register_option($item, &$required_options)
 	{
 		if(!isset($this->option_name_aliases[$item['name']]))
 			throw new Exception_ParseError('Unknown option '.$item['name'], Exception_ParseError::E_WRONG_OPTION);
@@ -268,6 +332,8 @@ class Config
 			throw new Exception_ParseError('No value for '.$item['name'], Exception_ParseError::E_NO_OPTION_VALUE);
 
 		$value = is_null($item['value']) ? $option['default'] : $item['value'];
+		if(!empty($option['_force_default_value']))
+			$value = $option['default'];
 
 		if(!$this->validate($value, $option))
 			throw new Exception_ParseError('Incorrect value for '.$item['name'], Exception_ParseError::E_NO_OPTION_VALUE);
@@ -278,6 +344,8 @@ class Config
 			$this->option_values[$name][] = $value;
 		else
 			$this->option_values[$name] = $value;
+
+		unset($required_options[$name]); // unset ignores undefined keys
 
 		return $option;
 	}

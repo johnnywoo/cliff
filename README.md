@@ -42,14 +42,14 @@ before outputting them, it can be done quite easily:
 
     Cliff::run(
         Cliff::config()
-        ->option('--uppercase -u', true) // adds --uppercase option and -u as its alias
+        ->flag('--uppercase -u') // adds --uppercase and -u as its alias
         ->many_params('lines')
     );
 
     foreach($_REQUEST['lines'] as $arg)
     {
-        if($_REQUEST['uppercase'])    // this will be null if the option is not present
-            $arg = strtoupper($arg);  // in args, so you don't have to worry about notices
+        if($_REQUEST['uppercase'])    // this will be FALSE if the flag is not set,
+            $arg = strtoupper($arg);  // so you don't have to worry about notices
 
         echo "$arg\n";
     }
@@ -77,12 +77,12 @@ If you don't mind, I'll leave this todo list here.
   * [+] Modifying option values and params via validator callbacks
   * [+] Special class for argument-related exceptions, so we can show usage only for those
   * [+] Specifying default error exit code somewhere (for grep-like exit codes)
+  * [+] Separate options and flags
+  * [+] A way to specify required options and options that require a value but provide default one
   * Ability to specify default values for single-letter options
   * Ability to design complex subcommand structures via branches and subcommands
     (to distinguish branches we can just forbid two consequent branches with no params)
   * A way to specify optional parameters (e.g. vmig db [table])
-  * A way to specify required options and options that require a value but provide default one
-    (maybe separate options and flags?)
   * Allow a string instead of $props array
   * Bash completion for options and params
   * Helper for colors

@@ -12,16 +12,16 @@ use \cliff\Cliff;
 Cliff::run(
 	Cliff::config()
 	->desc('Takes a number and multiplies it.')
-	->option('--double -d', true, array( // note that you need a non-null default here
+	->flag('--double -d', array(
 		'Multiply the number by 2',
 	))
-	->option('--triple -t', true, array(
+	->flag('--triple -t', array(
 		'Multiply the number by 3',
 	))
-	->option('--negate -n', true, array(
+	->flag('--negate -n', array(
 		'Change sign of the number'
 	))
-	->option('--multiply -m', null, array( // null default means this option requires a value
+	->option('--multiply -m', array(
 		'Multiply by an arbitrary number',
 		'validator' => 'is_numeric',
 	))
@@ -42,7 +42,7 @@ if($_REQUEST['triple'])
 if($_REQUEST['negate'])
 	$number *= -1;
 
-if($_REQUEST['multiply'] != '') // may be 0, so a strict check here ($_REQUEST will have only strings and arrays of strings)
+if(!is_null($_REQUEST['multiply'])) // may be 0, so a strict check here (it will be NULL if the option was not given)
 	$number *= $_REQUEST['multiply'];
 
 echo "$number\n";

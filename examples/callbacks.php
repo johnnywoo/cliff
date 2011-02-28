@@ -11,7 +11,7 @@ use \cliff\Cliff;
 Cliff::run(
 	Cliff::config()
 	->desc('Describes issues from an issue tracker')
-	->option('--version -v', true, array(
+	->flag('--version -v', array(
 		'Output version info',
 		'validator' => function(&$value) {
 			// Validation callback is called immediately when --list (or -l) is read
@@ -21,7 +21,7 @@ Cliff::run(
 			exit;
 		},
 	))
-	->option('--issue -i', false, array(
+	->option('--issue -i', array(
 		'Narrow the list by ID or a branch name
 		Let\'s say we have the following git branch naming convention:
 		author_1234_description
@@ -34,8 +34,11 @@ Cliff::run(
 			return is_numeric($value);
 		},
 	))
-	->option('--tracker', 'http://example.com/default-tracker', array('Tracker URL'))
-	->option('--clean-cache', true, array(
+	->option('--tracker', array(
+		'Tracker URL',
+		'default' => 'http://example.com/default-tracker',
+	))
+	->flag('--clean-cache', array(
 		'Clean issue cache before fetching data',
 		'callback' => function() {
 			// here we can use $_REQUEST to clean the appropriate cache

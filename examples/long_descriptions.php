@@ -16,16 +16,16 @@ Cliff::run(
 		making them usually very huge, which is cool because huge things
 		are totally cool in every possible way.'
 	)
-	->option('--double -d', true, array( // note that you need a non-null default here
+	->flag('--double -d', array(
 		'Multiply the number by 2',
 	))
-	->option('--triple -t', true, array(
+	->flag('--triple -t', array(
 		'Multiply the number by 3',
 	))
-	->option('--negate -n', true, array(
+	->flag('--negate -n', array(
 		'Change sign of the number'
 	))
-	->option('--multiply -m', null, array( // null default means this option requires a value
+	->option('--multiply -m', array(
 		'Multiply by an arbitrary number',
 		'validator' => 'is_numeric',
 	))

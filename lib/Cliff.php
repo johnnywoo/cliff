@@ -67,7 +67,7 @@ class Cliff
 	{
 		if(!isset($config->options['help']))
 		{
-			$config->option('--help', true, array(
+			$config->flag('--help', array(
 				'Show descriptions of options and params',
 				'validator' => function() use($config) {
 					$usage = new Usage($config);
