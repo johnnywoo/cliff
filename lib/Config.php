@@ -160,7 +160,7 @@ class Config
 		$props['default'] = $default;
 		$this->options[$main_name] = $props;
 
-		$this->option_values[$main_name] = $props['default'];
+		$this->option_values[$main_name] = null;
 
 		return $this;
 	}
