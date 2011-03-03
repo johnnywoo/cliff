@@ -12,6 +12,7 @@ namespace cliff;
  * ->param(name, props)         # <script> file
  * ->many_params(name, props)   # <script> file file2 file3
  * ->desc(text)
+ * ->allow_unknown_options(state)
  *
  * General props: is_array, validator, callback.
  * Flag/option props: default, if_absent, is_required, name.
@@ -70,6 +71,12 @@ class Config
 	public function desc($description)
 	{
 		$this->description = $description;
+		return $this;
+	}
+
+	public function allow_unknown_options($state = true)
+	{
+		$this->allow_unknown_options = $state;
 		return $this;
 	}
 
@@ -266,6 +273,7 @@ class Config
 	public $options                   = array();
 	public $required_options          = array();
 	public $short_options_with_values = '';
+	public $allow_unknown_options     = false;
 
 	public $param_values  = array();
 	public $option_values = array();
@@ -323,17 +331,35 @@ class Config
 	protected function register_option($item, &$required_options)
 	{
 		if(!isset($this->option_name_aliases[$item['name']]))
-			throw new Exception_ParseError('Unknown option '.$item['name'], Exception_ParseError::E_WRONG_OPTION);
+		{
+			if(!$this->allow_unknown_options)
+				throw new Exception_ParseError('Unknown option '.$item['name'], Exception_ParseError::E_WRONG_OPTION);
 
-		$name = $this->option_name_aliases[$item['name']];
-		$option = $this->options[$name];
+			$name = ltrim($item['name'], '-');
+			$option = array(
+				'default'      => null,
+				'name'         => $name,
+				'_first_alias' => $item['name'],
+				'_force_default_value' => is_null($item['value']), // we need to allow no-value, but there is no non-null default
+			);
+		}
+		else
+		{
+			$name = $this->option_name_aliases[$item['name']];
+			$option = $this->options[$name];
+		}
 
-		if(is_null($option['default']) && is_null($item['value']))
-			throw new Exception_ParseError('No value for '.$item['name'], Exception_ParseError::E_NO_OPTION_VALUE);
+		if(empty($option['_force_default_value']))
+		{
+			if(is_null($option['default']) && is_null($item['value']))
+				throw new Exception_ParseError('No value for '.$item['name'], Exception_ParseError::E_NO_OPTION_VALUE);
 
-		$value = is_null($item['value']) ? $option['default'] : $item['value'];
-		if(!empty($option['_force_default_value']))
+			$value = is_null($item['value']) ? $option['default'] : $item['value'];
+		}
+		else
+		{
 			$value = $option['default'];
+		}
 
 		if(!$this->validate($value, $option))
 			throw new Exception_ParseError('Incorrect value for '.$item['name'], Exception_ParseError::E_NO_OPTION_VALUE);
@@ -343,7 +369,9 @@ class Config
 		if(!empty($option['is_array']))
 			$this->option_values[$name][] = $value;
 		else
+		{
 			$this->option_values[$name] = $value;
+		}
 
 		unset($required_options[$name]); // unset ignores undefined keys
 
@@ -393,12 +421,7 @@ class Config
 
 	public function get_request()
 	{
-		$request = $this->param_values;
-		foreach($this->options as $name=>$option)
-		{
-			$request[$name] = isset($this->option_values[$name]) ? $this->option_values[$name] : null;
-		}
-		return $request;
+		return $this->param_values + $this->option_values;
 	}
 
 	protected function validate(&$value, $props)

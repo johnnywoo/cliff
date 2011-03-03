@@ -66,6 +66,10 @@ Read phpdoc comments in `lib/Config.php` for all configuration possibilities.
 To change error exit code (which is used when an uncaught exception occurs), you need to
 change Cliff::$error_exit_code. Default error exit code is 1.
 
+You can use Cliff to add bash completion to any other program. Simply create a cliff script
+with nothing but config and completion callbacks, and set the actual program name as alias
+when installing the completion into bash profile.
+
 ## REQUIREMENTS
 
 The only thing Cliff requires is PHP 5.3.
@@ -79,12 +83,14 @@ If you don't mind, I'll leave this todo list here.
   * [+] Specifying default error exit code somewhere (for grep-like exit codes)
   * [+] Separate options and flags
   * [+] A way to specify required options and options that require a value but provide default one
+  * [+] Ability to allow unconfigured options
   * Ability to specify default values for single-letter options
   * Ability to design complex subcommand structures via branches and subcommands
     (to distinguish branches we can just forbid two consequent branches with no params)
   * A way to specify optional parameters (e.g. vmig db [table])
   * Allow a string instead of $props array
   * Bash completion for options and params
+  * Aliases when installing completion into bash profile (like g='script' x='script -a -b')
   * Helper for colors
   * Helper for reading (char, string, password, stdin)
   * Helper for writing (out, err, interface = skipped if not tty, table)
