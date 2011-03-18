@@ -14,8 +14,8 @@ namespace cliff;
  * ->desc(text)
  * ->allow_unknown_options(state)
  *
- * General props: is_array, validator, callback.
- * Flag/option props: default, if_absent, is_required, name.
+ * General props: is_array, is_required, validator, callback.
+ * Flag/option props: default, if_absent, name.
  *
  *
  * ELEMENT PROPERTIES in $props:
@@ -28,11 +28,20 @@ namespace cliff;
  *
  * (common preferences for flags, options and params)
  *
- *  * is_array:  If true, the param/option is allowed to be present in request multiple times,
- *               and all values are accumulated in an array.
+ *  * is_array:  If true, the arg is allowed to be set multiple times, and all values are
+ *               accumulated in an array.
+ *
+ *  * is_required  The entry must be set in script arguments at least once.
+ *                 Defaults to TRUE for params and FALSE for flags/options.
+ *
+ *                 Note that param validation is possessive: if a param is valid, it grabs the arg
+ *                 and does not let go. If you have two params:
+ *                   <script> <a> <b>
+ *                 configured to <a> not required and <b> required (with same validation or without it)
+ *                 it will not work as expected: <a> will grab the arg and <b> is required.
  *
  *  * validator: A regexp or callback (which is called with reference to value as first argument
- *               and should return bool); callback will be called immediately after the value is
+ *               and should return bool); validator will be called immediately after the value is
  *               parsed from script arguments, so $_REQUEST will not be filled yet.
  *               For array options/params the callback will be called for each element of the array.
  *               WARNING: the callback receives a reference to value as its argument!
@@ -45,18 +54,16 @@ namespace cliff;
  *
  * (preferences for flags and options)
  *
- *  * name:      Name for $_REQUEST, if you don't like the default one
- *               (which is 'name' for --name and 'n' for -n).
- *
- *  * is_required  The option must be set in script arguments at least once.
- *
- *  * if_absent  Value for $_REQUEST if the option/flag was not present in script arguments.
- *               Defaults to NULL for options and FALSE for flags.
- *
  *  * default    Value for $_REQUEST if the option/flag is present in script arguments
  *               without a value (--x, but not --x=1). If default is not set or set NULL
  *               for an option, that option will require a value, causing an error without it.
  *               Defaults to TRUE for flags.
+ *
+ *  * if_absent  Value for $_REQUEST if the option/flag was not set in script arguments.
+ *               Defaults to NULL for options and FALSE for flags.
+ *
+ *  * name:      Name for $_REQUEST, if you don't like the default one
+ *               (which is 'name' for --name and 'n' for -n).
  */
 class Config
 {
@@ -102,6 +109,9 @@ class Config
 
 		if(isset($this->params[$name]) || isset($this->options[$name]))
 			throw new Exception('Config error: duplicate name '.$name);
+
+		if(!array_key_exists('is_required', $props))
+			$props['is_required'] = true;
 
 		$this->params[$name] = $props;
 
@@ -308,13 +318,20 @@ class Config
 				$this->register_param($item, $params_stack);
 		}
 
-		if(!empty($params_stack))
+		// allowed leftower params:
+		// non-required params
+		// required array params with non-empty arrays
+		foreach($params_stack as $name)
 		{
-			// this is only allowed if there is one last param left,
-			// it is array and there is something in it already
-			$name = reset($params_stack);
-			if(count($params_stack) > 1 || empty($this->params[$name]['is_array']) || !isset($this->param_values[$name]))
-				throw new Exception_ParseError('Need more arguments', Exception_ParseError::E_NO_PARAM);
+			$param = $this->params[$name];
+
+			if(empty($param['is_required']))
+				continue;
+
+			if(!empty($param['is_array']) && !empty($this->param_values[$name]))
+				continue;
+
+			throw new Exception_ParseError('Need more arguments', Exception_ParseError::E_NO_PARAM);
 		}
 
 		if(!empty($required_options))
@@ -337,10 +354,9 @@ class Config
 
 			$name = ltrim($item['name'], '-');
 			$option = array(
-				'default'      => null,
+				'default'      => is_null($item['value']) ? true : null, // unknown flags get TRUE
 				'name'         => $name,
 				'_first_alias' => $item['name'],
-				'_force_default_value' => is_null($item['value']), // we need to allow no-value, but there is no non-null default
 			);
 		}
 		else
@@ -349,17 +365,10 @@ class Config
 			$option = $this->options[$name];
 		}
 
-		if(empty($option['_force_default_value']))
-		{
-			if(is_null($option['default']) && is_null($item['value']))
-				throw new Exception_ParseError('No value for '.$item['name'], Exception_ParseError::E_NO_OPTION_VALUE);
+		if(is_null($option['default']) && is_null($item['value']))
+			throw new Exception_ParseError('No value for '.$item['name'], Exception_ParseError::E_NO_OPTION_VALUE);
 
-			$value = is_null($item['value']) ? $option['default'] : $item['value'];
-		}
-		else
-		{
-			$value = $option['default'];
-		}
+		$value = is_null($item['value']) ? $option['default'] : $item['value'];
 
 		if(!$this->validate($value, $option))
 			throw new Exception_ParseError('Incorrect value for '.$item['name'], Exception_ParseError::E_NO_OPTION_VALUE);
@@ -389,6 +398,15 @@ class Config
 		$value = $item['value'];
 
 		$is_valid = $this->validate($value, $param);
+
+		if(!$is_valid && !$param['is_required'])
+		{
+			// okay, it is not valid, but the param is not required,
+			// so we just continue to the next arg
+			array_shift($params_stack);
+			return $this->register_param($item, $params_stack);
+		}
+
 		if(!empty($param['is_array']))
 		{
 			if(!$is_valid)

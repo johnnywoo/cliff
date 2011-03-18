@@ -24,8 +24,17 @@ class Cliff
 		return new Config();
 	}
 
-	public static function run(Config $config)
+	public static function run(Config $config = null)
 	{
+		if(is_null($config))
+		{
+			$config = self::config()
+				->allow_unknown_options()
+				->many_params('args', array(
+					'is_required' => false,
+				));
+		}
+
 		// set exception handler
 		set_exception_handler(function(\Exception $e) use($config) {
 

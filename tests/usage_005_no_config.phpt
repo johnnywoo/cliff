@@ -1,32 +1,33 @@
 --TEST--
-Default values for options
+No-config mode
 --ARGS--
--abc --ddd --eee=ZZZ
+-ab --ccc --ddd=ZZZ e f
 --FILE--
 <?php
 include __DIR__ . '/_functions.inc';
-use cliff\Cliff;
 
-Cliff::run(
-	Cliff::config()
-	->allow_unknown_options()
-);
+cliff\Cliff::run();
 
 var_dump($_REQUEST);
 
 ?>
 --EXPECT--
 array(6) {
+  ["args"]=>
+  array(2) {
+    [0]=>
+    string(1) "e"
+    [1]=>
+    string(1) "f"
+  }
   ["help"]=>
   bool(false)
   ["a"]=>
   bool(true)
   ["b"]=>
   bool(true)
-  ["c"]=>
+  ["ccc"]=>
   bool(true)
   ["ddd"]=>
-  bool(true)
-  ["eee"]=>
   string(3) "ZZZ"
 }
