@@ -7,6 +7,7 @@ require_once __DIR__.'/Exception.php';
 require_once __DIR__.'/Exception/ParseError.php';
 require_once __DIR__.'/Config.php';
 require_once __DIR__.'/Parser.php';
+require_once __DIR__.'/Tokenizer.php';
 require_once __DIR__.'/Usage.php';
 
 class Cliff

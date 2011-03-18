@@ -33,3 +33,16 @@ function draw_parser($parser, $short_options_with_values = '')
 	}
 	echo "---\n";
 }
+
+function draw_tokenizer($string)
+{
+	// pipes are used so we don't have to add extra escaping madness,
+	// but heading/trailing whitespace is still visible
+	echo "> |$string|\n";
+	$tk = new cliff\Tokenizer($string);
+	while($arg = $tk->read())
+	{
+		echo 'arg |'.$arg['arg'].'|  word |'.$arg['word']."|\n";
+	}
+	echo "---\n";
+}
