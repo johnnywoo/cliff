@@ -78,16 +78,34 @@ for easy work, but don't have to configure anything.
     // --option=a will become $_REQUEST['option'] == 'a'
     // non-options will be accumulated in $_REQUEST['args'] array
 
-You can always add configuration later, to enable proper usage, validation and bash completion.
+You can always add configuration later, to enable proper help, validation and bash completion.
+
+## BASH COMPLETION
+
+Currently there is only basic completion for configured options. To enable it, add the
+following into your .profile (or .bash_profile, whatever the name is on your system):
+
+    alias awesometool="/usr/bin/php /path/to/your/awesometool.php"
+    complete -o bashdefault -o default -C "/usr/bin/php /path/to/your/awesometool.php ----cliff-complete" awesometool
+
+In this example:
+ * /usr/bin/php is php cli binary
+ * /path/to/your/awesometool.php is your cliff script
+ * awesometool is the alias you will use to execute the awesome tool
+
+After editing the profile, source it (or simply log off and on), and awesometool <tab>
+should start working.
+
+You can use Cliff to add bash completion to any other program. Simply create a cliff script
+with nothing but config and completion callbacks, and set the actual program name
+when installing the completion into bash profile. Like this:
+
+    complete -o bashdefault -o default -C "/usr/bin/php /path/to/your/phpunit-cliff.php ----cliff-complete" phpunit
 
 ## NOTES
 
 To change error exit code (which is used when an uncaught exception occurs), you need to
 change Cliff::$error_exit_code. Default error exit code is 1.
-
-You can use Cliff to add bash completion to any other program. Simply create a cliff script
-with nothing but config and completion callbacks, and set the actual program name as alias
-when installing the completion into bash profile.
 
 ## REQUIREMENTS
 
@@ -107,10 +125,14 @@ If you don't mind, I'll leave this todo list here.
     no validation or anything; could be useful for tmp scripts (hack a tool together with no design
     planning and then, when it matures, configure it for usage and completion)
   * [+] A way to specify optional parameters (e.g. vmig db [table])
+  * Bash completion for options and params
+    * [+] Completion for options
+    * Completion for params
+    * Completion for option values
+    * Aliases when installing completion into bash profile (like g='script' x='script -a -b')
+    * A nice way to install completion handlers into the profile
   * Ability to specify default values for single-letter options
   * Allow a string instead of $props array
-  * Bash completion for options and params
-    * Aliases when installing completion into bash profile (like g='script' x='script -a -b')
   * Helper for colors
   * Helper for reading (char, string, password, stdin)
   * Helper for writing (out, err, interface = skipped if not tty, table)

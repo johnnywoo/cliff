@@ -9,6 +9,7 @@ require_once __DIR__.'/Config.php';
 require_once __DIR__.'/Parser.php';
 require_once __DIR__.'/Tokenizer.php';
 require_once __DIR__.'/Usage.php';
+require_once __DIR__.'/Completion.php';
 
 class Cliff
 {
@@ -77,6 +78,18 @@ class Cliff
 	{
 		if(!isset($config->options['help']))
 		{
+			$config->flag('----cliff-complete', array(
+				'Bash completion handler',
+				'hide_usage' => true,
+				'validator' => function() use($config) {
+					$cmp = new Completion($config);
+					foreach($cmp->complete($_ENV['COMP_LINE'], $_ENV['COMP_POINT']) as $opt)
+					{
+						echo "$opt\n";
+					}
+					exit;
+				},
+			));
 			$config->flag('--help', array(
 				'Show descriptions of options and params',
 				'validator' => function() use($config) {

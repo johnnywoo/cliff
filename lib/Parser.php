@@ -20,6 +20,11 @@ class Parser
 		$this->args = $args;
 	}
 
+	public function are_options_allowed()
+	{
+		return $this->options_allowed;
+	}
+
 	/**
 	 * Fetches next entity from the list of args
 	 *

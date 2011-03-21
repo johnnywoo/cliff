@@ -64,6 +64,11 @@ namespace cliff;
  *
  *  * name:      Name for $_REQUEST, if you don't like the default one
  *               (which is 'name' for --name and 'n' for -n).
+ *
+ *  * hide_usage: If TRUE, the option will not be present in usage/help.
+ *                Also enables hide_completion, unless the latter is manually set to FALSE.
+ *
+ *  * hide_completion: If TRUE, the option will not be present in bash completion.
  */
 class Config
 {
@@ -198,6 +203,8 @@ class Config
 			$props['default'] = null;
 		if(!isset($props['if_absent']))
 			$props['if_absent'] = null;
+		if(!empty($props['hide_usage']) && !array_key_exists('hide_completion', $props))
+			$props['hide_completion'] = true;
 		$props['name'] = $main_name;
 		$props['_first_alias'] = reset($names);
 
@@ -304,11 +311,12 @@ class Config
 		$this->option_name_aliases[$alias] = $name;
 	}
 
-	public function load_from_parser(Parser $parser)
+	public function load_from_parser(Parser $parser, $incomplete_mode = false)
 	{
 		$params_stack     = array_keys($this->params);
 		$required_options = array_flip($this->required_options);
 
+		$last_item = false;
 		while($item = $parser->read($this->short_options_with_values))
 		{
 			if($item['type'] == Parser::TYPE_OPTION)
@@ -316,8 +324,18 @@ class Config
 
 			if($item['type'] == Parser::TYPE_PARAM)
 				$this->register_param($item, $params_stack);
+
+			$last_item = $item;
 		}
 
+		if(!$incomplete_mode)
+			$this->validate_command($params_stack, $required_options);
+
+		return $last_item;
+	}
+
+	protected function validate_command($params_stack, $required_options)
+	{
 		// allowed leftower params:
 		// non-required params
 		// required array params with non-empty arrays
@@ -490,13 +508,51 @@ class Config
 		}
 	}
 
-	public function get_options_with_aliases()
+	public function get_options_for_usage()
 	{
 		$options = $this->options;
+
+		foreach($options as $k=>$option)
+		{
+			if(!empty($option['hide_usage']))
+				unset($options[$k]);
+		}
+
 		foreach($this->option_name_aliases as $alias=>$name)
 		{
 			$options[$name]['aliases'][] = $alias;
 		}
+
 		return $options;
+	}
+
+	public function complete($args, $current_arg)
+	{
+		$this->callbacks = array();
+		array_pop($args); // last one is being completed
+		$parser = new Parser($args);
+		$this->load_from_parser($parser, true);
+
+		$competions = array();
+		if(substr($current_arg, 0, 1) == '-' && $parser->are_options_allowed())
+		{
+			foreach($this->option_name_aliases as $alias=>$name)
+			{
+				// ignore one-letter aliases
+				if(strlen($alias) == 2)
+					continue;
+
+				$opt = $this->options[$name];
+				if(!empty($opt['hide_completion']))
+					continue;
+
+				if(is_null($opt['default']))
+					$alias .= '=';
+
+				$competions[] = $alias;
+			}
+		}
+
+		return $competions;
 	}
 }
