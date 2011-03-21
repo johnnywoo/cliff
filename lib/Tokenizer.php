@@ -5,15 +5,12 @@ namespace cliff;
 /**
  * Reads args (words) from raw command line string (bash shell syntax)
  *
- *
- * comments
- * $'sad'
- *
- *
+ * Todo (maybe): comments, $'c-quotes'
  */
 class Tokenizer
 {
 	private $string = '';
+	private $offset = 0;
 
 	public function __construct($string)
 	{
@@ -31,9 +28,9 @@ class Tokenizer
 	 *
 	 * @return array
 	 */
-	public function read()
+	public function read($stop_at_offset = -1)
 	{
-		if(!(strlen($this->string)))
+		if(!strlen($this->string) || ($stop_at_offset > -1 && $this->offset >= $stop_at_offset))
 			return false;
 
 		$arg  = '';
@@ -44,6 +41,9 @@ class Tokenizer
 
 		while(strlen($this->string))
 		{
+			if($this->offset == $stop_at_offset)
+				break;
+
 			$c = substr($this->string, 0, 1);
 			$step_length = 1;
 			$skip_char = false;
@@ -82,6 +82,14 @@ class Tokenizer
 					$is_heading_whitespace = false;
 
 					$next_char = substr($this->string, 1, 1);
+
+					// if we should stop at the next char, the slash cannot escape
+					// anything and should be treated as a regular char
+					if($this->offset + 1 == $stop_at_offset)
+					{
+						$word .= $c;
+						break;
+					}
 
 					// in single quotes backslash does not work (treated as a regular char)
 
@@ -132,6 +140,7 @@ class Tokenizer
 				$arg .= substr($this->string, 0, $step_length);
 
 			$this->string = substr($this->string, $step_length);
+			$this->offset += $step_length;
 		}
 
 		return array(
