@@ -520,7 +520,8 @@ class Config
 
 		foreach($this->option_name_aliases as $alias=>$name)
 		{
-			$options[$name]['aliases'][] = $alias;
+			if(isset($options[$name]))
+				$options[$name]['aliases'][] = $alias;
 		}
 
 		return $options;
