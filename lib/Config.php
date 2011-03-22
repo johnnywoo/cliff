@@ -65,13 +65,20 @@ namespace cliff;
  *  * name:      Name for $_REQUEST, if you don't like the default one
  *               (which is 'name' for --name and 'n' for -n).
  *
- *  * hide_usage: If TRUE, the option will not be present in usage/help.
- *                Also enables hide_completion, unless the latter is manually set to FALSE.
- *
- *  * hide_completion: If TRUE, the option will not be present in bash completion.
+ *  * visibility: Defines places where the option/flag will be visible.
+ *                Bitmask of following constants:
+ *                 * Config::V_USAGE
+ *                 * Config::V_HELP
+ *                 * Config::V_COMPLETION
+ *                Defaults to all of them.
  */
 class Config
 {
+	const V_USAGE      = 1;
+	const V_HELP       = 2;
+	const V_COMPLETION = 4;
+	const V_ALL        = 7;
+
 	/**
 	 * Sets a description for the program
 	 *
@@ -203,8 +210,8 @@ class Config
 			$props['default'] = null;
 		if(!isset($props['if_absent']))
 			$props['if_absent'] = null;
-		if(!empty($props['hide_usage']) && !array_key_exists('hide_completion', $props))
-			$props['hide_completion'] = true;
+		if(!array_key_exists('visibility', $props))
+			$props['visibility'] = self::V_ALL;
 		$props['name'] = $main_name;
 		$props['_first_alias'] = reset($names);
 
@@ -508,13 +515,13 @@ class Config
 		}
 	}
 
-	public function get_options_for_usage()
+	public function get_options_for_usage($visibility = self::V_ALL)
 	{
 		$options = $this->options;
 
 		foreach($options as $k=>$option)
 		{
-			if(!empty($option['hide_usage']))
+			if(!($option['visibility'] & $visibility))
 				unset($options[$k]);
 		}
 
@@ -544,7 +551,7 @@ class Config
 					continue;
 
 				$opt = $this->options[$name];
-				if(!empty($opt['hide_completion']))
+				if(!($opt['visibility'] & self::V_COMPLETION))
 					continue;
 
 				if(is_null($opt['default']))

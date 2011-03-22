@@ -41,7 +41,7 @@ class Usage
 
 		$usage = 'Usage: '.$script_name;
 
-		$options = $this->config->get_options_for_usage();
+		$options = $this->config->get_options_for_usage($this->long_descriptions ? Config::V_HELP : Config::V_USAGE);
 		if(count($options))
 		{
 			$aliases = array();
@@ -74,7 +74,7 @@ class Usage
 	public function make_options_block()
 	{
 		$lines = array();
-		foreach($this->config->get_options_for_usage() as $option)
+		foreach($this->config->get_options_for_usage($this->long_descriptions ? Config::V_HELP : Config::V_USAGE) as $option)
 		{
 			$option = $this->makeup_option_aliases($option);
 			$term = join(', ', $option['aliases']);

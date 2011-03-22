@@ -76,11 +76,11 @@ class Cliff
 
 	protected static function add_default_options(Config $config)
 	{
-		if(!isset($config->options['help']))
+		if(!isset($config->options['cliff-complete--']))
 		{
-			$config->flag('----cliff-complete', array(
-				'Bash completion handler',
-				'hide_usage' => true,
+			// completion handler for bash
+			$config->flag('--cliff-complete--', array(
+				'visibility' => 0,
 				'validator' => function() use($config) {
 					$cmp = new Completion($config);
 					foreach($cmp->complete($_ENV['COMP_LINE'], $_ENV['COMP_POINT']) as $opt)
@@ -90,6 +90,29 @@ class Cliff
 					exit;
 				},
 			));
+
+			if(!isset($config->options['cliff-bash-profile']))
+			{
+				// completion handler for bash
+				$config->option('--cliff-bash-profile', array(
+					'Generate alias and completion commands for bash profile',
+					'visibility' => Config::V_HELP,
+					'validator' => function($alias) {
+						$php = 'php ';
+						$fname = realpath($_SERVER['PHP_SELF']);
+						// if the file has a shebang, we assume it can execute itself
+						if(is_readable($fname) && file_get_contents($fname, 0, null, 0, 2) == '#!')
+							$php = '';
+						echo "alias $alias='$php$fname'\n";
+						echo "complete -o bashdefault -o default -C '$php$fname --cliff-complete--' $alias\n";
+						exit;
+					},
+				));
+			}
+		}
+
+		if(!isset($config->options['help']))
+		{
 			$config->flag('--help', array(
 				'Show descriptions of options and params',
 				'validator' => function() use($config) {
@@ -99,7 +122,6 @@ class Cliff
 					exit;
 				},
 			));
-
 		}
 	}
 }
