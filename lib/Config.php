@@ -2,6 +2,11 @@
 
 namespace cliff;
 
+// let's not affect autoload, we don't have too much files here
+require_once __DIR__.'/Exception.php';
+require_once __DIR__.'/Exception/ParseError.php';
+require_once __DIR__.'/Parser.php';
+
 /**
  * A config for CLI options and params
  *
@@ -70,14 +75,17 @@ namespace cliff;
  *                 * Config::V_USAGE
  *                 * Config::V_HELP
  *                 * Config::V_COMPLETION
+ *                 * Config::V_REQUEST
  *                Defaults to all of them.
  */
 class Config
 {
+	const V_NONE       = 0;
 	const V_USAGE      = 1;
 	const V_HELP       = 2;
 	const V_COMPLETION = 4;
-	const V_ALL        = 7;
+	const V_REQUEST    = 8;
+	const V_ALL        = 15;
 
 	/**
 	 * Sets a description for the program
@@ -403,9 +411,7 @@ class Config
 		if(!empty($option['is_array']))
 			$this->option_values[$name][] = $value;
 		else
-		{
 			$this->option_values[$name] = $value;
-		}
 
 		unset($required_options[$name]); // unset ignores undefined keys
 
@@ -464,7 +470,18 @@ class Config
 
 	public function get_request()
 	{
-		return $this->param_values + $this->option_values;
+		$option_values = array();
+		foreach($this->option_values as $name=>$value)
+		{
+			if(isset($this->options[$name]))
+			{
+				$option = $this->options[$name];
+				if(!($option['visibility'] & self::V_REQUEST))
+					continue;
+			}
+			$option_values[$name] = $value;
+		}
+		return $this->param_values + $option_values;
 	}
 
 	protected function validate(&$value, $props)

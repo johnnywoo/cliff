@@ -4,7 +4,7 @@ No-config mode
 -ab --ccc --ddd=ZZZ e f
 --FILE--
 <?php
-include __DIR__ . '/_functions.inc';
+include __DIR__ . '/../lib/Cliff.php';
 
 cliff\Cliff::run();
 
@@ -12,7 +12,7 @@ var_dump($_REQUEST);
 
 ?>
 --EXPECT--
-array(6) {
+array(5) {
   ["args"]=>
   array(2) {
     [0]=>
@@ -20,8 +20,6 @@ array(6) {
     [1]=>
     string(1) "f"
   }
-  ["help"]=>
-  bool(false)
   ["a"]=>
   bool(true)
   ["b"]=>

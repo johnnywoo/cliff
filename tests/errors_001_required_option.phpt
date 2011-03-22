@@ -3,7 +3,7 @@ Error test: required option not set
 --ARGS--
 --FILE--
 <?php
-include __DIR__ . '/_functions.inc';
+include __DIR__ . '/../lib/Cliff.php';
 use cliff\Cliff;
 
 Cliff::run(

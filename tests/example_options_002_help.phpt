@@ -25,6 +25,9 @@ OPTIONS
   -m ..., --multiply=...
     Multiply by an arbitrary number
 
+  --cliff-bash-profile=...
+    Generate alias and completion commands for bash profile
+
   --help
     Show descriptions of options and params
 

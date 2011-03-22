@@ -4,7 +4,7 @@ Custom name for an option
 -x 'Homer Simpson'
 --FILE--
 <?php
-include __DIR__ . '/_functions.inc';
+include __DIR__ . '/../lib/Cliff.php';
 use cliff\Cliff;
 
 Cliff::run(
@@ -19,9 +19,7 @@ var_dump($_REQUEST);
 
 ?>
 --EXPECT--
-array(2) {
+array(1) {
   ["mister_x"]=>
   string(13) "Homer Simpson"
-  ["help"]=>
-  bool(false)
 }

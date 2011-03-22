@@ -1,6 +1,14 @@
 <?
 
-require_once __DIR__ . '/../lib/Cliff.php';
+// let's not affect autoload, we don't have too much files here
+require_once __DIR__.'/../lib/Cliff.php';
+require_once __DIR__.'/../lib/Exception.php';
+require_once __DIR__.'/../lib/Exception/ParseError.php';
+require_once __DIR__.'/../lib/Config.php';
+require_once __DIR__.'/../lib/Parser.php';
+require_once __DIR__.'/../lib/Tokenizer.php';
+require_once __DIR__.'/../lib/Usage.php';
+require_once __DIR__.'/../lib/Completion.php';
 
 function draw_parser($parser, $short_options_with_values = '')
 {

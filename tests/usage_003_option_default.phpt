@@ -4,7 +4,7 @@ Default values for options
 --val=123 --def --req-val=456 --req-def
 --FILE--
 <?php
-include __DIR__ . '/_functions.inc';
+include __DIR__ . '/../lib/Cliff.php';
 use cliff\Cliff;
 
 Cliff::run(
@@ -21,7 +21,7 @@ var_dump($_REQUEST);
 
 ?>
 --EXPECT--
-array(6) {
+array(5) {
   ["val"]=>
   string(3) "123"
   ["def"]=>
@@ -32,6 +32,4 @@ array(6) {
   string(3) "456"
   ["req-def"]=>
   string(3) "ZZZ"
-  ["help"]=>
-  bool(false)
 }

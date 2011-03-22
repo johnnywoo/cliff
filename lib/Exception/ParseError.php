@@ -2,6 +2,9 @@
 
 namespace cliff;
 
+// let's not affect autoload, we don't have too much files here
+require_once __DIR__.'/../Exception.php';
+
 class Exception_ParseError extends Exception
 {
 	const E_NO_OPTION       = 101;

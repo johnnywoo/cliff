@@ -80,7 +80,7 @@ class Cliff
 		{
 			// completion handler for bash
 			$config->flag('--cliff-complete--', array(
-				'visibility' => 0,
+				'visibility' => Config::V_NONE,
 				'validator' => function() use($config) {
 					$cmp = new Completion($config);
 					foreach($cmp->complete($_ENV['COMP_LINE'], $_ENV['COMP_POINT']) as $opt)
@@ -115,6 +115,7 @@ class Cliff
 		{
 			$config->flag('--help', array(
 				'Show descriptions of options and params',
+				'visibility' => Config::V_ALL - Config::V_REQUEST,
 				'validator' => function() use($config) {
 					$usage = new Usage($config);
 					$usage->long_descriptions = true;

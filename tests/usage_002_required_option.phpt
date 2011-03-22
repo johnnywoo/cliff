@@ -4,7 +4,7 @@ Required option set correctly
 -x KEKEKE
 --FILE--
 <?php
-include __DIR__ . '/_functions.inc';
+include __DIR__ . '/../lib/Cliff.php';
 use cliff\Cliff;
 
 Cliff::run(
@@ -19,9 +19,7 @@ var_dump($_REQUEST);
 
 ?>
 --EXPECT--
-array(2) {
+array(1) {
   ["x"]=>
   string(6) "KEKEKE"
-  ["help"]=>
-  bool(false)
 }

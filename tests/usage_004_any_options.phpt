@@ -4,7 +4,7 @@ Default values for options
 -abc --ddd --eee=ZZZ
 --FILE--
 <?php
-include __DIR__ . '/_functions.inc';
+include __DIR__ . '/../lib/Cliff.php';
 use cliff\Cliff;
 
 Cliff::run(
@@ -16,9 +16,7 @@ var_dump($_REQUEST);
 
 ?>
 --EXPECT--
-array(6) {
-  ["help"]=>
-  bool(false)
+array(5) {
   ["a"]=>
   bool(true)
   ["b"]=>
