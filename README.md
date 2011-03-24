@@ -6,6 +6,7 @@ The main features are:
   * Arguments/options parser
   * Terse chained-call configuration syntax
   * No-config mode
+  * Automatic bash completion
   * Usage and help generation
   * Validation and callbacks for args
   * Exception handling
@@ -82,30 +83,36 @@ You can always add configuration later, to enable proper help, validation and ba
 
 ## BASH COMPLETION
 
-Currently there is only basic completion for configured options. To enable it, add the
-following into your .profile (or .bash_profile, whatever the name is on your system):
+Currently there is only basic completion for configured options. To enable it, run your script
+with --cliff-bash-profile=alias option and add the output into .profile (or .bash_profile,
+whatever the name is on your system).
 
-    alias awesometool="/usr/bin/php /path/to/your/awesometool.php"
-    complete -o bashdefault -o default -C "/usr/bin/php /path/to/your/awesometool.php ----cliff-complete" awesometool
+    $ php awesometool.php --cliff-bash-profile=atool
+    alias atool='php /path/to/your/awesometool.php'
+    complete -o bashdefault -o default -C 'php /path/to/your/awesometool.php --cliff-complete--' atool
 
 In this example:
- * /usr/bin/php is php cli binary
- * /path/to/your/awesometool.php is your cliff script
- * awesometool is the alias you will use to execute the awesome tool
+ * awesometool.php is your cliff script
+ * atool is the alias you will use to execute the awesome tool
 
-After editing the profile, source it (or simply log off and on), and awesometool <tab>
-should start working.
+After editing the profile, source it (or simply log off and on), and atool <tab> should
+start working. Well, currently, only atool -<tab>, because only options are supported atm.
+
+If you do not have php binary in your PATH, you should replace 'php' there by full filename.
+
+## NOTES
 
 You can use Cliff to add bash completion to any other program. Simply create a cliff script
 with nothing but config and completion callbacks, and set the actual program name
 when installing the completion into bash profile. Like this:
 
-    complete -o bashdefault -o default -C "/usr/bin/php /path/to/your/phpunit-cliff.php ----cliff-complete" phpunit
+    complete -o bashdefault -o default -C "/usr/bin/php /path/to/your/phpunit-cliff.php --cliff-complete--" phpunit
 
-## NOTES
+To signal an error in your script, simply throw an exception. It will be caught by Cliff,
+its message will be displayed into stderr, and the script will exit with non-zero status
+(useful for shell scripting).
 
-To change error exit code (which is used when an uncaught exception occurs), you need to
-change Cliff::$error_exit_code. Default error exit code is 1.
+To change error exit code, you need to change Cliff::$error_exit_code. Default error exit code is 1.
 
 ## REQUIREMENTS
 
@@ -125,6 +132,7 @@ If you don't mind, I'll leave this todo list here.
     no validation or anything; could be useful for tmp scripts (hack a tool together with no design
     planning and then, when it matures, configure it for usage and completion)
   * [+] A way to specify optional parameters (e.g. vmig db [table])
+  * Non-validation parse time callbacks (to prevent --help from breaking completion)
   * Bash completion for options and params
     * [+] Completion for options
     * Completion for params
