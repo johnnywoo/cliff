@@ -42,7 +42,7 @@ class Completion
 		}
 		catch(\Exception $e)
 		{
-			$options = array();
+			return array();
 		}
 
 		return $this->reduce_options($options, $last_arg);

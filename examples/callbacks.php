@@ -13,8 +13,8 @@ Cliff::run(
 	->desc('Describes issues from an issue tracker')
 	->flag('--version -v', array(
 		'Output version info',
-		'validator' => function(&$value) {
-			// Validation callback is called immediately when --list (or -l) is read
+		'callback' => function() {
+			// The callback is called immediately when --list (or -l) is read
 			// from script arguments, before parsing is done completely.
 			// So we can ignore the rest of arguments by exiting the script here.
 			echo "Powerful Issue Describer version 1.0.0\n";
@@ -37,13 +37,6 @@ Cliff::run(
 	->option('--tracker', array(
 		'Tracker URL',
 		'default' => 'http://example.com/default-tracker',
-	))
-	->flag('--clean-cache', array(
-		'Clean issue cache before fetching data',
-		'callback' => function() {
-			// here we can use $_REQUEST to clean the appropriate cache
-			echo "Cleaned cache for ".$_REQUEST['tracker']."\n";
-		}
 	))
 );
 

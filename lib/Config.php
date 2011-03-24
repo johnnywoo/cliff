@@ -50,13 +50,17 @@ require_once __DIR__.'/Parser.php';
  *                 parsed from script arguments, so $_REQUEST will not be filled yet.
  *                 For array options/params the callback will be called for each element of the array.
  *
- *                 WARNING: the callback receives a reference to value as its argument!
+ *                 WARNING: the validation callback receives a reference to value as its argument!
  *                 Even if your callback is defined as function($value){} with no reference,
  *                 $value is still a reference there and changing it will affect $_REQUEST.
  *
- *  * callback:    Will be called if the entity is found in script arguments (after all arguments
- *                 are parsed and $_REQUEST is filled); this callback does not receive any arguments.
+ *                 Also keep in mind that validation callback will be called for bash completion,
+ *                 so it should not output anything or exit the script. For that, use regular callback.
+ *
+ *  * callback:    Will be called immediately after the value is parsed from script arguments
+ *                 (after validation callback if there is one), so $_REQUEST will not be filled yet.
  *                 For array options/params the callback will be called for each element of the array.
+ *                 The callback receives parsed value as its argument.
  *
  * (preferences for flags and options)
  *
@@ -316,8 +320,6 @@ class Config
 
 	public $description = '';
 
-	protected $callbacks = array();
-
 
 	protected function add_option_alias($name, $alias)
 	{
@@ -336,10 +338,10 @@ class Config
 		while($item = $parser->read($this->short_options_with_values))
 		{
 			if($item['type'] == Parser::TYPE_OPTION)
-				$this->register_option($item, $required_options);
+				$this->register_option($item, $required_options, $incomplete_mode);
 
 			if($item['type'] == Parser::TYPE_PARAM)
-				$this->register_param($item, $params_stack);
+				$this->register_param($item, $params_stack, $incomplete_mode);
 
 			$last_item = $item;
 		}
@@ -379,7 +381,7 @@ class Config
 		}
 	}
 
-	protected function register_option($item, &$required_options)
+	protected function register_option($item, &$required_options, $incomplete_mode = false)
 	{
 		if(!isset($this->option_name_aliases[$item['name']]))
 		{
@@ -407,19 +409,20 @@ class Config
 		if(!$this->validate($value, $option))
 			throw new Exception_ParseError('Incorrect value for '.$item['name'], Exception_ParseError::E_NO_OPTION_VALUE);
 
-		$this->register_callback($option, $item['name']);
-
 		if(!empty($option['is_array']))
 			$this->option_values[$name][] = $value;
 		else
 			$this->option_values[$name] = $value;
+
+		if(!$incomplete_mode)
+			$this->run_callback($option, $value, $item['name']);
 
 		unset($required_options[$name]); // unset ignores undefined keys
 
 		return $option;
 	}
 
-	protected function register_param($item, &$params_stack)
+	protected function register_param($item, &$params_stack, $incomplete_mode = false)
 	{
 		if(empty($params_stack))
 			throw new Exception_ParseError('Too many arguments', Exception_ParseError::E_TOO_MANY_PARAMS);
@@ -434,7 +437,7 @@ class Config
 		if(!$is_valid && !$param['is_required'])
 		{
 			// okay, it is not valid, but the param is not required,
-			// so we just continue to the next arg
+			// so we just continue to the next param
 			array_shift($params_stack);
 			return $this->register_param($item, $params_stack);
 		}
@@ -448,7 +451,7 @@ class Config
 					throw new Exception_ParseError('Unexpected "'. $value .'" in place of '.$name, Exception_ParseError::E_WRONG_PARAM);
 
 				// okay, now it is not valid, but there is something in the array
-				// so we just continue to the next arg
+				// so we just continue to the next param
 				array_shift($params_stack);
 				return $this->register_param($item, $params_stack);
 			}
@@ -464,7 +467,8 @@ class Config
 			array_shift($params_stack);
 		}
 
-		$this->register_callback($param, $name);
+		if(!$incomplete_mode)
+			$this->run_callback($param, $value, $name);
 
 		return $param;
 	}
@@ -509,27 +513,14 @@ class Config
 	 * @param array $props
 	 * @param string $item_desc
 	 */
-	protected function register_callback($props, $item_desc = '')
+	protected function run_callback($props, $value, $item_desc = '')
 	{
 		if(!empty($props['callback']))
-			$this->callbacks[] = array($props['callback'], $item_desc);
-	}
-
-	/**
-	 * Runs appropriate callbacks for options and params
-	 *
-	 * We need to call this when $_REQUEST is already filled with values,
-	 * so this call is done externally.
-	 */
-	public function run_callbacks()
-	{
-		foreach($this->callbacks as $row)
 		{
-			list($cb, $desc) = $row;
-			if(!is_callable($cb))
-				throw new Exception('Non-callable callback for '.$desc);
+			if(!is_callable($props['callback']))
+				throw new Exception('Non-callable callback for '.$item_desc);
 
-			call_user_func($cb);
+			call_user_func($props['callback'], $value);
 		}
 	}
 
@@ -554,7 +545,6 @@ class Config
 
 	public function complete($args, $current_arg)
 	{
-		$this->callbacks = array();
 		array_pop($args); // last one is being completed
 		$parser = new Parser($args);
 		$this->load_from_parser($parser, true);

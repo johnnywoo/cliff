@@ -132,7 +132,7 @@ If you don't mind, I'll leave this todo list here.
     no validation or anything; could be useful for tmp scripts (hack a tool together with no design
     planning and then, when it matures, configure it for usage and completion)
   * [+] A way to specify optional parameters (e.g. vmig db [table])
-  * Non-validation parse time callbacks (to prevent --help from breaking completion)
+  * [+] Non-validation parse time callbacks (to prevent --help from breaking completion)
   * Bash completion for options and params
     * [+] Completion for options
     * Completion for params
@@ -152,3 +152,4 @@ If you don't mind, I'll leave this todo list here.
       * Load config from Cliff XML (not sure if PEAR::Console_CommandLine format is enough)
       * Generate config in Cliff XML
   * Load config from PEAR::Console_CommandLine XML
+  * Option defined as '-ab' should have name 'a', not 'ab'

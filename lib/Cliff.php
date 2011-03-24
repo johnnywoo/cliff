@@ -69,7 +69,6 @@ class Cliff
 		{
 			$_REQUEST[$k] = $v;
 		}
-		$config->run_callbacks();
 	}
 
 	protected static function add_default_options(Config $config)
@@ -79,7 +78,7 @@ class Cliff
 			// completion handler for bash
 			$config->flag('--cliff-complete--', array(
 				'visibility' => Config::V_NONE,
-				'validator' => function() use($config) {
+				'callback' => function() use($config) {
 					$cmp = new Completion($config);
 					foreach($cmp->complete($_ENV['COMP_LINE'], $_ENV['COMP_POINT']) as $opt)
 					{
@@ -95,7 +94,7 @@ class Cliff
 				$config->option('--cliff-bash-profile', array(
 					'Generate alias and completion commands for bash profile',
 					'visibility' => Config::V_HELP,
-					'validator' => function($alias) {
+					'callback' => function($alias) {
 						$php = 'php ';
 						$fname = realpath($_SERVER['PHP_SELF']);
 						// if the file has a shebang, we assume it can execute itself
@@ -114,7 +113,7 @@ class Cliff
 			$config->flag('--help', array(
 				'Show descriptions of options and params',
 				'visibility' => Config::V_ALL - Config::V_REQUEST,
-				'validator' => function() use($config) {
+				'callback' => function() use($config) {
 					$usage = new Usage($config);
 					$usage->long_descriptions = true;
 					echo $usage->make();
