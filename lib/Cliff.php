@@ -3,11 +3,9 @@
 namespace cliff;
 
 // let's not affect autoload, we don't have too much files here
-require_once __DIR__.'/Exception.php';
 require_once __DIR__.'/Exception/ParseError.php';
 require_once __DIR__.'/Config.php';
 require_once __DIR__.'/Parser.php';
-require_once __DIR__.'/Tokenizer.php';
 require_once __DIR__.'/Usage.php';
 require_once __DIR__.'/Completion.php';
 
