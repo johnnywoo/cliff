@@ -20,7 +20,7 @@ require_once __DIR__.'/Parser.php';
  * ->allow_unknown_options(state)
  *
  * General props: is_array, is_required, validator, callback.
- * Flag/option props: default, if_absent, name.
+ * Flag/option props: default, if_absent, name, visibility.
  *
  *
  * ELEMENT PROPERTIES in $props:
@@ -33,8 +33,8 @@ require_once __DIR__.'/Parser.php';
  *
  * (common preferences for flags, options and params)
  *
- *  * is_array:  If true, the arg is allowed to be set multiple times, and all values are
- *               accumulated in an array.
+ *  * is_array:    If true, the arg is allowed to be set multiple times, and all values are
+ *                 accumulated in an array.
  *
  *  * is_required  The entry must be set in script arguments at least once.
  *                 Defaults to TRUE for params and FALSE for flags/options.
@@ -45,38 +45,39 @@ require_once __DIR__.'/Parser.php';
  *                 configured to <a> not required and <b> required (with same validation or without it)
  *                 it will not work as expected: <a> will grab the arg and <b> is required.
  *
- *  * validator: A regexp or callback (which is called with reference to value as first argument
- *               and should return bool); validator will be called immediately after the value is
- *               parsed from script arguments, so $_REQUEST will not be filled yet.
- *               For array options/params the callback will be called for each element of the array.
- *               WARNING: the callback receives a reference to value as its argument!
- *               Even if your callback is defined as function($value){} with no reference,
- *               $value is still a reference there and changing it will affect $_REQUEST.
+ *  * validator:   A regexp or callback (which is called with reference to value as first argument
+ *                 and should return bool); validator will be called immediately after the value is
+ *                 parsed from script arguments, so $_REQUEST will not be filled yet.
+ *                 For array options/params the callback will be called for each element of the array.
  *
- *  * callback:  Will be called if the entity is found in script arguments (after all arguments
- *               are parsed and $_REQUEST is filled); this callback does not receive any arguments.
- *               For array options/params the callback will be called for each element of the array.
+ *                 WARNING: the callback receives a reference to value as its argument!
+ *                 Even if your callback is defined as function($value){} with no reference,
+ *                 $value is still a reference there and changing it will affect $_REQUEST.
+ *
+ *  * callback:    Will be called if the entity is found in script arguments (after all arguments
+ *                 are parsed and $_REQUEST is filled); this callback does not receive any arguments.
+ *                 For array options/params the callback will be called for each element of the array.
  *
  * (preferences for flags and options)
  *
- *  * default    Value for $_REQUEST if the option/flag is present in script arguments
- *               without a value (--x, but not --x=1). If default is not set or set NULL
- *               for an option, that option will require a value, causing an error without it.
- *               Defaults to TRUE for flags.
+ *  * default      Value for $_REQUEST if the option/flag is present in script arguments
+ *                 without a value (--x, but not --x=1). If default is not set or set NULL
+ *                 for an option, that option will require a value, causing an error without it.
+ *                 Defaults to TRUE for flags.
  *
- *  * if_absent  Value for $_REQUEST if the option/flag was not set in script arguments.
- *               Defaults to NULL for options and FALSE for flags.
+ *  * if_absent    Value for $_REQUEST if the option/flag was not set in script arguments.
+ *                 Defaults to NULL for options and FALSE for flags.
  *
- *  * name:      Name for $_REQUEST, if you don't like the default one
- *               (which is 'name' for --name and 'n' for -n).
+ *  * name:        Name for $_REQUEST, if you don't like the default one
+ *                 (which is 'name' for --name and 'n' for -n).
  *
- *  * visibility: Defines places where the option/flag will be visible.
- *                Bitmask of following constants:
- *                 * Config::V_USAGE
- *                 * Config::V_HELP
- *                 * Config::V_COMPLETION
- *                 * Config::V_REQUEST
- *                Defaults to all of them.
+ *  * visibility:  Defines places where the option/flag will be visible.
+ *                 Bitmask of following constants:
+ *                  * Config::V_USAGE
+ *                  * Config::V_HELP
+ *                  * Config::V_COMPLETION
+ *                  * Config::V_REQUEST
+ *                 Defaults to all of them.
  */
 class Config
 {
