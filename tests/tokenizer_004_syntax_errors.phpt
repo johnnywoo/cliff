@@ -29,5 +29,5 @@ arg |'b c|  word |b c|
 ---
   unclosed escaping
 > |a\|
-arg |a\|  word |a\|
+arg |a\|  word |a|
 ---

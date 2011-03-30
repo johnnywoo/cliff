@@ -93,8 +93,8 @@ class Tokenizer
 
 					// in single quotes backslash does not work (treated as a regular char)
 
-					// outside quotes a space can be escaped
-					if(!$open_quote && $next_char == ' ')
+					// outside quotes slash is stripped from any char, except for the newline
+					if(!$open_quote && $next_char != "\n")
 					{
 						$word .= $next_char;
 						$step_length++;

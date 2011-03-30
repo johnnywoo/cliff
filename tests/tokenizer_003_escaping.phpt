@@ -21,12 +21,15 @@ draw_tokenizer('"a\""');
 echo "  space escaping\n";
 draw_tokenizer('a\\ a "b\\ b" \'c\\ c\'');
 
+echo "  outside quotes\n";
+draw_tokenizer('a\\\'a b\\"b c\nc');
+
 ?>
 --EXPECT--
   non-quoted
 > |a\a b\\b c\
 c|
-arg |a\a|  word |a\a|
+arg |a\a|  word |aa|
 arg |b\\b|  word |b\b|
 arg |c\
 c|  word |cc|
@@ -57,4 +60,10 @@ arg |"a\""|  word |a"|
 arg |a\ a|  word |a a|
 arg |"b\ b"|  word |b\ b|
 arg |'c\ c'|  word |c\ c|
+---
+  outside quotes
+> |a\'a b\"b c\nc|
+arg |a\'a|  word |a'a|
+arg |b\"b|  word |b"b|
+arg |c\nc|  word |cnc|
 ---
