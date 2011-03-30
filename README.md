@@ -83,22 +83,21 @@ You can always add configuration later, to enable proper help, validation and ba
 
 ## BASH COMPLETION
 
-Currently there is only basic completion for configured options. To enable it, run your script
-with --cliff-bash-profile=alias option and add the output into .profile (or .bash_profile,
-whatever the name is on your system).
+Currently there is only basic completion for configured options. To enable it, put the following
+into your ~/.profile (or ~/.bash_profile, whatever the name is on your system).
 
-    $ php awesometool.php --cliff-bash-profile=atool
-    alias atool='php /path/to/your/awesometool.php'
-    complete -o bashdefault -o default -C 'php /path/to/your/awesometool.php --cliff-complete--' atool
+    eval "$(/usr/bin/php /path/to/your/awesometool.php --cliff-bash-profile=atool)"
 
 In this example:
- * awesometool.php is your cliff script
+ * /usr/bin/php is your php 5.3 cli binary
+ * /path/to/your/awesometool.php is your cliff script
  * atool is the alias you will use to execute the awesome tool
 
 After editing the profile, source it (or simply log off and on), and atool <tab> should
 start working. Well, currently, only atool -<tab>, because only options are supported atm.
 
-If you do not have php binary in your PATH, you should replace 'php' there by full filename.
+Of course, instead of eval, you can execute the command by hand, alter it, etc.
+Eval is just a convenient way to get things working.
 
 ## NOTES
 
@@ -135,10 +134,10 @@ If you don't mind, I'll leave this todo list here.
   * [+] Non-validation parse time callbacks (to prevent --help from breaking completion)
   * Bash completion for options and params
     * [+] Completion for options
+    * [+] A nice way to install completion handlers into the profile
     * Completion for params
     * Completion for option values
     * Aliases when installing completion into bash profile (like g='script' x='script -a -b')
-    * A nice way to install completion handlers into the profile
   * Ability to specify default values for single-letter options
   * Allow a string instead of $props array
   * Helper for colors

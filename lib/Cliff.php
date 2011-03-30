@@ -95,13 +95,20 @@ class Cliff
 					'Generate alias and completion commands for bash profile',
 					'visibility' => Config::V_HELP,
 					'callback' => function($alias) {
-						$php = 'php ';
 						$fname = realpath($_SERVER['PHP_SELF']);
 						// if the file has a shebang, we assume it can execute itself
 						if(is_readable($fname) && file_get_contents($fname, 0, null, 0, 2) == '#!')
-							$php = '';
-						echo "alias $alias='$php$fname'\n";
-						echo "complete -o bashdefault -o default -C '$php$fname --cliff-complete--' $alias\n";
+						{
+							$alias_cmd    = $fname;
+							$complete_cmd = escapeshellarg($fname);
+						}
+						else
+						{
+							$alias_cmd    = 'php '.escapeshellarg($fname);
+							$complete_cmd = $alias_cmd;
+						}
+						echo 'alias '.escapeshellarg($alias).'='.escapeshellarg($alias_cmd)."\n";
+						echo 'complete -o bashdefault -o default -C '.escapeshellarg($complete_cmd.' --cliff-complete--').' '.escapeshellarg($alias)."\n";
 						exit;
 					},
 				));
