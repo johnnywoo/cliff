@@ -13,4 +13,7 @@ Cliff::run(Cliff::config());
 ?>
 --EXPECTF--
 alias 'awesometool'='php '\''%s/tests/usage_007_bash_profile_generator.php'\'''
-complete -o bashdefault -o default -C 'php '\''%s/tests/usage_007_bash_profile_generator.php'\'' --cliff-complete--' 'awesometool'
+function _cliff_complete_awesometool() {
+    COMPREPLY=($(php '%s/tests/usage_007_bash_profile_generator.php' --cliff-complete-- "$COMP_LINE" "$COMP_POINT"))
+}
+complete -o bashdefault -o default -F _cliff_complete_awesometool 'awesometool'

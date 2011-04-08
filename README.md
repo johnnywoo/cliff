@@ -99,13 +99,24 @@ start working. Well, currently, only atool -<tab>, because only options are supp
 Of course, instead of eval, you can execute the command by hand, alter it, etc.
 Eval is just a convenient way to get things working.
 
-## NOTES
+### Bash completion for third-party programs
 
 You can use Cliff to add bash completion to any other program. Simply create a cliff script
 with nothing but config and completion callbacks, and set the actual program name
-when installing the completion into bash profile. Like this:
+when installing the completion into bash profile.
 
-    complete -o bashdefault -o default -C "/usr/bin/php /path/to/your/phpunit-cliff.php --cliff-complete--" phpunit
+To do that:
+ 1. Write the script with desired config, let's put it in phpunit-config-helper.php
+ 2. Put this in your profile:
+
+    eval "$(/usr/bin/php /path/to/your/phpunit-config-helper.php --cliff-bash-profile=phpunit | sed 1d)"
+
+The sed part will remove alias command, so when you type "phpunit", it will still mean the phpunit
+you can work with (not the helper script); but completion will use the helper script.
+
+By the way, there is a pre-made phpunit helper script in examples directory.
+
+## NOTES
 
 To signal an error in your script, simply throw an exception. It will be caught by Cliff,
 its message will be displayed into stderr, and the script will exit with non-zero status
