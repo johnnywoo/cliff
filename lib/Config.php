@@ -549,7 +549,7 @@ class Config
 		$parser = new Parser($args);
 		$this->load_from_parser($parser, true);
 
-		$competions = array();
+		$completions = array();
 		if(substr($current_arg, 0, 1) == '-' && $parser->are_options_allowed())
 		{
 			foreach($this->option_name_aliases as $alias=>$name)
@@ -564,11 +564,13 @@ class Config
 
 				if(is_null($opt['default']))
 					$alias .= '=';
+				else
+					$alias .= ' ';
 
-				$competions[] = $alias;
+				$completions[] = $alias;
 			}
 		}
 
-		return $competions;
+		return $completions;
 	}
 }

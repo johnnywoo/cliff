@@ -118,9 +118,12 @@ class Cliff
 
 						echo 'alias ' . escapeshellarg($alias) . '=' . escapeshellarg($alias_cmd) . "\n";
 						echo 'function ' . $funcname . '() {' . "\n";
+						echo '    saveIFS=$IFS' . "\n";
+						echo "    IFS=$'\\n'\n";
 						echo '    COMPREPLY=($(' . $complete_cmd . ' --cliff-complete-- "$COMP_LINE" "$COMP_POINT"))' . "\n";
+						echo '    IFS=$saveIFS' . "\n";
 						echo "}\n";
-						echo 'complete -o bashdefault -o default -F ' . $funcname . ' ' . escapeshellarg($alias) . "\n";
+						echo 'complete -o bashdefault -o default -o nospace -F ' . $funcname . ' ' . escapeshellarg($alias) . "\n";
 						exit;
 					},
 				));
