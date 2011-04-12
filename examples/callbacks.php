@@ -36,7 +36,19 @@ Cliff::run(
 	))
 	->option('--tracker', array(
 		'Tracker URL',
-		'default' => 'http://example.com/default-tracker',
+		'completion' => array(
+			'http://example.com/default-tracker',
+			'http://example.com/special-tracker',
+			'http://example.com/special-tracker2',
+		),
+	))
+	->option('--type', array(
+		'Issue type',
+		'completion' => function($entered_value) {
+			// you don't have to sort of even match the correct variants,
+			// that is all done automatically
+			return array('bug', 'feature', 'task', 'meta', 'project');
+		},
 	))
 );
 
@@ -50,8 +62,6 @@ if($issue)
 	echo "One issue info requested: issue ID $issue\n";
 else
 	echo "All issues info requested\n";
-
-echo "Tracker URL is ".$_REQUEST['tracker']."\n";
 
 // Note that we didn't add params in our config, so the script
 // will not display usage if called with no arguments.

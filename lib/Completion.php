@@ -16,11 +16,16 @@ class Completion
 	}
 
 	/**
+	 * Calculates the completion options
+	 *
+	 * For meaning of COMP_WORDBREAKS refer to bash manual.
+	 *
 	 * @param string $command full command to be completed
 	 * @param int $cursor_offset position of the cursor
+	 * @param string $comp_wordbreaks
 	 * @return string[]
 	 */
-	public function complete($command, $cursor_offset)
+	public function complete($command, $cursor_offset, $comp_wordbreaks = " \t\n\"'><=;|&(:")
 	{
 		$tokenizer = new Tokenizer($command);
 
@@ -39,13 +44,12 @@ class Completion
 		try
 		{
 			$options = $this->config->complete($words, $last_arg ? $last_arg['word'] : '');
+			return $this->reduce_options($options, $last_arg, $comp_wordbreaks);
 		}
 		catch(\Exception $e)
 		{
 			return array();
 		}
-
-		return $this->reduce_options($options, $last_arg);
 	}
 
 	/**
@@ -53,9 +57,10 @@ class Completion
 	 *
 	 * @param string[] $options
 	 * @param array $arg
+	 * @param string $comp_wordbreaks
 	 * @return string[]
 	 */
-	protected function reduce_options($options, $arg)
+	protected function reduce_options($options, $arg, $comp_wordbreaks)
 	{
 		if(!$arg)
 			return $options;
@@ -64,25 +69,86 @@ class Completion
 		$cmp_arg  = strtolower($arg['arg']);
 		$length   = strlen($arg['word']);
 
-		foreach($options as $k=>$v)
+		// Readline treats our completion options as variants of last comp-word.
+		// Those words are separated not by IFS, like shell-words, but by
+		// COMP_WORDBREAKS characters like '=' and ':'.
+		//
+		// Our tokenizer splits its words in a shell-word manner, therefore
+		// the completion options can contain many comp-words. For correct completion
+		// to work, we need to find the last wordbreak and remove everything before it
+		// from our options, leaving only the last comp-word.
+		$prefix       = $arg['arg'];
+		$force_prefix = false;
+		$cw = preg_quote($comp_wordbreaks);
+		if(preg_match('{['.$cw.']([^'.$cw.']*)$}', $cmp_arg, $m))
+		{
+			$prefix       = $m[1];
+			$force_prefix = true;
+		}
+
+		foreach($options as $k=>$variant)
 		{
 			// need to convert the casing (ac<tab> -> aCC)
-			$prefix = strtolower(substr($v, 0, $length));
-			if($prefix == $cmp_word)
+			$pr = strtolower(substr($variant, 0, $length));
+			if($pr == $cmp_word && strlen($variant) != $length)
 			{
-				// prefix matches the word, but not the arg: keep the prefix as it was entered
-				if($prefix != $cmp_arg)
-					$options[$k] = $arg['arg'] . substr($v, $length);
-				// if prefix matches both word and arg, we can safely use the full option string,
-				// so completed string will have casing from the option, not as entered
+				// If the arg matches the word (that is, there is no special syntax in the arg)
+				// and we don't have to force the prefix because of a wordbreak, then it's better
+				// to use the whole variant string instead of a prefixed one (this way we can
+				// get correct case of chars)
+
+				if($pr != $cmp_arg || $force_prefix)
+					$options[$k] = $prefix . substr($variant, $length);
 			}
 			else
 			{
-				// does not match; skip this option
+				// does not match or is equal to what is being completed; skip this option
 				unset($options[$k]);
 			}
 		}
 
 		return $options;
+	}
+
+	public static function action_complete(Config $config)
+	{
+		$comp_wordbreaks = end($_SERVER['argv']);
+		$comp_point      = prev($_SERVER['argv']);
+		$comp_line       = prev($_SERVER['argv']);
+
+		/** @var $cmp completion */
+		$cmp = new static($config);
+		foreach($cmp->complete($comp_line, $comp_point, $comp_wordbreaks) as $opt)
+		{
+			echo "$opt\n";
+		}
+	}
+
+	public static function action_bash_profile($alias)
+	{
+		$fname = realpath($_SERVER['PHP_SELF']);
+
+		// if the file has a shebang, we assume it can execute itself
+		if(is_readable($fname) && file_get_contents($fname, 0, null, 0, 2) == '#!')
+		{
+			$alias_cmd    = $fname;
+			$complete_cmd = escapeshellarg($fname);
+		}
+		else
+		{
+			$alias_cmd    = 'php ' . escapeshellarg($fname);
+			$complete_cmd = $alias_cmd;
+		}
+
+		$funcname = '_cliff_complete_' . $alias;
+
+		echo 'alias ' . escapeshellarg($alias) . '=' . escapeshellarg($alias_cmd) . "\n";
+		echo 'function ' . $funcname . '() {' . "\n";
+		echo '    saveIFS=$IFS' . "\n";
+		echo "    IFS=$'\\n'\n";
+		echo '    COMPREPLY=($(' . $complete_cmd . ' --cliff-complete-- "$COMP_LINE" "$COMP_POINT" "$COMP_WORDBREAKS"))' . "\n";
+		echo '    IFS=$saveIFS' . "\n";
+		echo "}\n";
+		echo 'complete -o bashdefault -o default -o nospace -F ' . $funcname . ' ' . escapeshellarg($alias) . "\n";
 	}
 }

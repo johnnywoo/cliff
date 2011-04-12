@@ -79,15 +79,7 @@ class Cliff
 			$config->flag('--cliff-complete--', array(
 				'visibility' => Config::V_NONE,
 				'callback' => function() use($config) {
-
-					$comp_point = end($_SERVER['argv']);
-					$comp_line  = prev($_SERVER['argv']);
-
-					$cmp = new Completion($config);
-					foreach($cmp->complete($comp_line, $comp_point) as $opt)
-					{
-						echo "$opt\n";
-					}
+					Completion::action_complete($config);
 					exit;
 				},
 			));
@@ -99,31 +91,7 @@ class Cliff
 					'Generate alias and completion commands for bash profile',
 					'visibility' => Config::V_HELP,
 					'callback' => function($alias) {
-
-						$fname = realpath($_SERVER['PHP_SELF']);
-
-						// if the file has a shebang, we assume it can execute itself
-						if(is_readable($fname) && file_get_contents($fname, 0, null, 0, 2) == '#!')
-						{
-							$alias_cmd    = $fname;
-							$complete_cmd = escapeshellarg($fname);
-						}
-						else
-						{
-							$alias_cmd    = 'php ' . escapeshellarg($fname);
-							$complete_cmd = $alias_cmd;
-						}
-
-						$funcname = '_cliff_complete_' . $alias;
-
-						echo 'alias ' . escapeshellarg($alias) . '=' . escapeshellarg($alias_cmd) . "\n";
-						echo 'function ' . $funcname . '() {' . "\n";
-						echo '    saveIFS=$IFS' . "\n";
-						echo "    IFS=$'\\n'\n";
-						echo '    COMPREPLY=($(' . $complete_cmd . ' --cliff-complete-- "$COMP_LINE" "$COMP_POINT"))' . "\n";
-						echo '    IFS=$saveIFS' . "\n";
-						echo "}\n";
-						echo 'complete -o bashdefault -o default -o nospace -F ' . $funcname . ' ' . escapeshellarg($alias) . "\n";
+						Completion::action_bash_profile($alias);
 						exit;
 					},
 				));

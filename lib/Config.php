@@ -33,7 +33,7 @@ require_once __DIR__.'/Parser.php';
  *
  * (common preferences for flags, options and params)
  *
- *  * is_array:    If true, the arg is allowed to be set multiple times, and all values are
+ *  * is_array     If true, the arg is allowed to be set multiple times, and all values are
  *                 accumulated in an array.
  *
  *  * is_required  The entry must be set in script arguments at least once.
@@ -45,7 +45,7 @@ require_once __DIR__.'/Parser.php';
  *                 configured to <a> not required and <b> required (with same validation or without it)
  *                 it will not work as expected: <a> will grab the arg and <b> is required.
  *
- *  * validator:   A regexp or callback (which is called with reference to value as first argument
+ *  * validator    A regexp or callback (which is called with reference to value as first argument
  *                 and should return bool); validator will be called immediately after the value is
  *                 parsed from script arguments, so $_REQUEST will not be filled yet.
  *                 For array options/params the callback will be called for each element of the array.
@@ -57,10 +57,14 @@ require_once __DIR__.'/Parser.php';
  *                 Also keep in mind that validation callback will be called for bash completion,
  *                 so it should not output anything or exit the script. For that, use regular callback.
  *
- *  * callback:    Will be called immediately after the value is parsed from script arguments
+ *  * callback     Will be called immediately after the value is parsed from script arguments
  *                 (after validation callback if there is one), so $_REQUEST will not be filled yet.
  *                 For array options/params the callback will be called for each element of the array.
  *                 The callback receives parsed value as its argument.
+ *
+ *  * completion   Array of possible values or a callback returning such array.
+ *                 Use a closure if you need to pass a class method as callback!
+ *                 The callback receives the word being completed in first argument.
  *
  * (preferences for flags and options)
  *
@@ -72,10 +76,10 @@ require_once __DIR__.'/Parser.php';
  *  * if_absent    Value for $_REQUEST if the option/flag was not set in script arguments.
  *                 Defaults to NULL for options and FALSE for flags.
  *
- *  * name:        Name for $_REQUEST, if you don't like the default one
+ *  * name         Name for $_REQUEST, if you don't like the default one
  *                 (which is 'name' for --name and 'n' for -n).
  *
- *  * visibility:  Defines places where the option/flag will be visible.
+ *  * visibility   Defines places where the option/flag will be visible.
  *                 Bitmask of following constants:
  *                  * Config::V_USAGE
  *                  * Config::V_HELP
@@ -550,27 +554,58 @@ class Config
 		$this->load_from_parser($parser, true);
 
 		$completions = array();
-		if(substr($current_arg, 0, 1) == '-' && $parser->are_options_allowed())
+		if($parser->are_options_allowed())
 		{
-			foreach($this->option_name_aliases as $alias=>$name)
+			if(substr($current_arg, 0, 1) == '-')
+				$this->complete_options($completions);
+
+			if(preg_match('/^((--[^\s=]+)=)(.*)$/', $current_arg, $m))
 			{
-				// ignore one-letter aliases
-				if(strlen($alias) == 2)
-					continue;
-
-				$opt = $this->options[$name];
-				if(!($opt['visibility'] & self::V_COMPLETION))
-					continue;
-
-				if(is_null($opt['default']))
-					$alias .= '=';
-				else
-					$alias .= ' ';
-
-				$completions[] = $alias;
+				$op =& $this->option_name_aliases[$m[2]]; // 2 --x
+				if(isset($op))
+					$this->complete_option_value($completions, $m[1], $m[3], $op); // 1 --x=  3 value
 			}
 		}
 
 		return $completions;
+	}
+
+	private function complete_options(&$completions)
+	{
+		foreach($this->option_name_aliases as $alias=>$name)
+		{
+			// ignore one-letter aliases
+			if(strlen($alias) == 2)
+				continue;
+
+			$opt = $this->options[$name];
+			if(!($opt['visibility'] & self::V_COMPLETION))
+				continue;
+
+			if(is_null($opt['default']))
+				$alias .= '=';
+			else
+				$alias .= ' ';
+
+			$completions[] = $alias;
+		}
+	}
+
+	private function complete_option_value(&$completions, $option_prefix, $entered_value, $option_name)
+	{
+		if(empty($this->options[$option_name]['completion']))
+			return;
+		$cpt = $this->options[$option_name]['completion'];
+
+		if(!is_array($cpt) && is_callable($cpt))
+			$cpt = call_user_func($cpt, $entered_value);
+
+		if(is_array($cpt) || ($cpt instanceof Traversable))
+		{
+			foreach($cpt as $line)
+			{
+				$completions[] = $option_prefix . $line . ' ';
+			}
+		}
 	}
 }
