@@ -34,7 +34,7 @@ class Completion
 		while($next = $tokenizer->read($cursor_offset))
 		{
 			$last_arg = $next;
-			$words[]  = $next['word'];
+			$words[]  = $next->word;
 		}
 		array_shift($words); // first one is the executable name
 
@@ -43,7 +43,7 @@ class Completion
 
 		try
 		{
-			$options = $this->config->complete($words, $last_arg ? $last_arg['word'] : '');
+			$options = $this->config->complete($words, $last_arg ? $last_arg->word : '');
 			return $this->reduce_options($options, $last_arg, $comp_wordbreaks);
 		}
 		catch(\Exception $e)
@@ -56,7 +56,7 @@ class Completion
 	 * Tailors list of options to the prefix which is being completed
 	 *
 	 * @param string[] $options
-	 * @param array $arg
+	 * @param Token $arg
 	 * @param string $comp_wordbreaks
 	 * @return string[]
 	 */
@@ -65,9 +65,9 @@ class Completion
 		if(!$arg)
 			return $options;
 
-		$cmp_word = strtolower($arg['word']);
-		$cmp_arg  = strtolower($arg['arg']);
-		$length   = strlen($arg['word']);
+		$cmp_word = strtolower($arg->word);
+		$cmp_arg  = strtolower($arg->arg);
+		$length   = strlen($cmp_arg);
 
 		// Readline treats our completion options as variants of last comp-word.
 		// Those words are separated not by IFS, like shell-words, but by
@@ -77,34 +77,26 @@ class Completion
 		// the completion options can contain many comp-words. For correct completion
 		// to work, we need to find the last wordbreak and remove everything before it
 		// from our options, leaving only the last comp-word.
-		$prefix       = $arg['arg'];
-		$force_prefix = false;
-		$cw = preg_quote($comp_wordbreaks);
-		if(preg_match('{['.$cw.']([^'.$cw.']*)$}', $cmp_arg, $m))
-		{
-			$prefix       = $m[1];
-			$force_prefix = true;
-		}
+		$prefix = $arg->get_last_word($comp_wordbreaks);
+		$force_prefix = ($prefix != $arg->arg);
 
 		foreach($options as $k=>$variant)
 		{
 			// need to convert the casing (ac<tab> -> aCC)
-			$pr = strtolower(substr($variant, 0, $length));
-			if($pr == $cmp_word && strlen($variant) != $length)
-			{
-				// If the arg matches the word (that is, there is no special syntax in the arg)
-				// and we don't have to force the prefix because of a wordbreak, then it's better
-				// to use the whole variant string instead of a prefixed one (this way we can
-				// get correct case of chars)
-
-				if($pr != $cmp_arg || $force_prefix)
-					$options[$k] = $prefix . substr($variant, $length);
-			}
-			else
+			$variant_prefix = strtolower(substr($variant, 0, $length));
+			if($variant_prefix != $cmp_word || strlen($variant) == $length)
 			{
 				// does not match or is equal to what is being completed; skip this option
 				unset($options[$k]);
+				continue;
 			}
+
+			// If the arg matches the word (that is, there is no special syntax in the arg)
+			// and we don't have to force the prefix because of a wordbreak, then it's better
+			// to use the whole variant string instead of a prefixed one (this way we can
+			// get correct case of chars)
+			if($force_prefix || $variant_prefix != $cmp_arg)
+				$options[$k] = $prefix . substr($variant, $length);
 		}
 
 		return $options;

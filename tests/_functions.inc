@@ -50,7 +50,7 @@ function draw_tokenizer($string, $stop_at_offset = -1)
 	$tk = new cliff\Tokenizer($string);
 	while($arg = $tk->read($stop_at_offset))
 	{
-		echo 'arg |'.$arg['arg'].'|  word |'.$arg['word']."|\n";
+		echo 'arg |'.$arg->arg.'|  word |'.$arg->word."|\n";
 	}
 	echo "---\n";
 }

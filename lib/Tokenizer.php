@@ -2,10 +2,10 @@
 
 namespace cliff;
 
+require_once __DIR__.'/Token.php';
+
 /**
  * Reads args (words) from raw command line string (bash shell syntax)
- *
- * Todo (maybe): comments, $'c-quotes'
  */
 class Tokenizer
 {
@@ -26,7 +26,8 @@ class Tokenizer
 	 *
 	 * When there is nothing to read, FALSE is returned.
 	 *
-	 * @return array
+	 * @param int $stop_at_offset
+	 * @return Token
 	 */
 	public function read($stop_at_offset = -1)
 	{
@@ -143,9 +144,6 @@ class Tokenizer
 			$this->offset += $step_length;
 		}
 
-		return array(
-			'arg'  => $arg,
-			'word' => $word,
-		);
+		return new Token($arg, $word);
 	}
 }
