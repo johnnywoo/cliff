@@ -309,6 +309,7 @@ class Config
 	//
 
 	public $params = array();
+	protected $params_stack = array();
 
 	public $option_name_aliases       = array();
 	public $options                   = array();
@@ -335,8 +336,8 @@ class Config
 
 	public function load_from_parser(Parser $parser, $incomplete_mode = false)
 	{
-		$params_stack     = array_keys($this->params);
-		$required_options = array_flip($this->required_options);
+		$this->params_stack = array_keys($this->params);
+		$required_options   = array_flip($this->required_options);
 
 		$last_item = false;
 		while($item = $parser->read($this->short_options_with_values))
@@ -345,13 +346,13 @@ class Config
 				$this->register_option($item, $required_options, $incomplete_mode);
 
 			if($item['type'] == Parser::TYPE_PARAM)
-				$this->register_param($item, $params_stack, $incomplete_mode);
+				$this->register_param($item, $this->params_stack, $incomplete_mode);
 
 			$last_item = $item;
 		}
 
 		if(!$incomplete_mode)
-			$this->validate_command($params_stack, $required_options);
+			$this->validate_command($this->params_stack, $required_options);
 
 		return $last_item;
 	}
@@ -567,7 +568,30 @@ class Config
 			}
 		}
 
+		foreach($this->get_allowed_params() as $param)
+		{
+			$this->complete_param_value(&$completions, $current_arg, $param);
+		}
+
 		return $completions;
+	}
+
+	private function get_allowed_params()
+	{
+		if(empty($this->params_stack))
+			return array();
+
+		$params = array();
+		reset($this->params_stack);
+		do
+		{
+			// we need all non-required params and the first required
+			$p = $this->params[current($this->params_stack)];
+			$params[] = $p;
+		}
+		while(next($this->params_stack) && empty($p['is_required']));
+
+		return $params;
 	}
 
 	private function complete_options(&$completions)
@@ -605,6 +629,24 @@ class Config
 			foreach($cpt as $line)
 			{
 				$completions[] = $option_prefix . $line . ' ';
+			}
+		}
+	}
+
+	private function complete_param_value(&$completions, $entered_value, $param)
+	{
+		if(empty($param['completion']))
+			return;
+		$cpt = $param['completion'];
+
+		if(!is_array($cpt) && is_callable($cpt))
+			$cpt = call_user_func($cpt, $entered_value);
+
+		if(is_array($cpt) || ($cpt instanceof Traversable))
+		{
+			foreach($cpt as $line)
+			{
+				$completions[] = $line . ' ';
 			}
 		}
 	}

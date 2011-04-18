@@ -149,8 +149,11 @@ If you don't mind, I'll leave this todo list here.
     * [+] Completion for options
     * [+] A nice way to install completion handlers into the profile
     * [+] Completion for option values
+    * [+] Completion for params
+    * Completion of params and validation
+    * Completion standard modes (filenames, etc) mixed with custom options
+    * Smart completion for mentioned options (not array = do not complete it twice)
     * Completion for single-letter option values
-    * Completion for params
     * Completion of weird chars and escaping
     * Aliases when installing completion into bash profile (like g='script' x='script -a -b')
   * Ability to specify default values for single-letter options
