@@ -10,6 +10,8 @@ require_once __DIR__.'/../lib/Tokenizer.php';
 require_once __DIR__.'/../lib/Usage.php';
 require_once __DIR__.'/../lib/Completion.php';
 
+use cliff\Completion;
+
 function draw_parser($parser, $short_options_with_values = '')
 {
 	if(!($parser instanceof cliff\Parser))
@@ -52,5 +54,17 @@ function draw_tokenizer($string, $stop_at_offset = -1)
 	{
 		echo 'arg |'.$arg->arg.'|  word |'.$arg->word."|\n";
 	}
+	echo "---\n";
+}
+
+function draw_completon($config, $command, $pos = null)
+{
+	if(is_null($pos))
+		$pos = strlen($command);
+
+	ob_start();
+	Completion::action_complete($config, array($command, $pos, " \t\n\"'><=;|&(:"));
+	$c = ob_get_clean();
+	echo str_replace("\n", "|\n", $c);
 	echo "---\n";
 }

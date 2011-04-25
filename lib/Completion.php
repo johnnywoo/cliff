@@ -102,11 +102,14 @@ class Completion
 		return $options;
 	}
 
-	public static function action_complete(Config $config)
+	public static function action_complete(Config $config, $args = null)
 	{
-		$comp_wordbreaks = end($_SERVER['argv']);
-		$comp_point      = prev($_SERVER['argv']);
-		$comp_line       = prev($_SERVER['argv']);
+		if(is_null($args))
+			$args = $_SERVER['argv'];
+
+		$comp_wordbreaks = end($args);
+		$comp_point      = prev($args);
+		$comp_line       = prev($args);
 
 		/** @var $cmp completion */
 		$cmp = new static($config);
