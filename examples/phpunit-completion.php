@@ -3,10 +3,10 @@
 /**
  * This is a completion script for phpunit
  *
- * You can use this to add bash completion for phpunit.
+ * You can use this to enable basic bash completion for phpunit.
  * To do it, add to your bash profile:
  *
- * complete -o bashdefault -o default -C "/usr/bin/php /path/to/cliff/examples/phpunit-completion.php --cliff-complete--" phpunit
+ * eval "$(/usr/bin/php /path/to/your/phpunit-completion.php --cliff-bash-profile=phpunit | sed 1d)"
  *
  * Based on phpunit 3.5.13.
  */

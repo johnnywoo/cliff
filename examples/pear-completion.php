@@ -3,7 +3,7 @@
 /**
  * This is a completion script for PEAR
  *
- * You can use this to add bash completion for PEAR cli script.
+ * You can use this to enable basic bash completion for PEAR cli script.
  *
  * Based on PEAR 1.9.2.
  */
