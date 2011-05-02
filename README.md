@@ -66,8 +66,8 @@ Read phpdoc comments in `lib/Config.php` for all configuration possibilities.
 
 ## NO-CONFIG MODE
 
-No-config mode allows you to have your cake and eat it too: you get $_REQUEST filling
-for easy work, but don't have to configure anything.
+No-config mode allows you to have your cake and eat it too: you get `$_REQUEST` filled,
+but don't have to configure anything.
 
     <?php
     require_once 'cliff/lib/Cliff.php';
@@ -83,22 +83,25 @@ You can always add configuration later, to enable proper help, validation and ba
 
 ## BASH COMPLETION
 
-Currently there is only completion for configured options (the options/flags themselves
-and long option values, if there is no weird chars in them). To enable it, put the following
-into your ~/.profile (or ~/.bash_profile, whatever the name is on your system).
+The completion is available for configured options (the options/flags themselves
+and long option values) and param values. It may work incorrectly with weird characters,
+but simple cases should behave properly.
+
+To enable the completion, put the following into your ~/.profile
+(or ~/.bash_profile, whatever the name is on your system).
 
     eval "$(/usr/bin/php /path/to/your/awesometool.php --cliff-bash-profile=atool)"
 
 In this example:
- * /usr/bin/php is your php 5.3 cli binary
- * /path/to/your/awesometool.php is your cliff script
- * atool is the alias you will use to execute the awesome tool
 
-After editing the profile, source it (or simply log off and on), and atool <tab> should
-start working. Well, currently, only atool -<tab> and --x=<tab>, because only options are
-supported atm.
+ * `/usr/bin/php` is your php 5.3 cli binary
+ * `/path/to/your/awesometool.php` is your cliff script
+ * `atool` is the alias you will use to execute the awesome tool
 
-Of course, instead of eval, you can execute the command by hand, alter it, etc.
+After editing the profile, `source` it (or simply log off and on), and `atool <tab>` should
+start working.
+
+Of course, instead of eval, you can execute the command by hand, alter its output, etc.
 Eval is just a convenient way to get things working.
 
 ### Bash completion for third-party programs
@@ -108,15 +111,14 @@ with nothing but config and completion callbacks, and set the actual program nam
 when installing the completion into bash profile.
 
 To do that:
- 1. Write the script with desired config, let's put it in phpunit-config-helper.php
+
+ 1. Write the script with desired config, like the one in `examples/phpunit-completion.php`
  2. Put this in your profile:
 
-    eval "$(/usr/bin/php /path/to/your/phpunit-config-helper.php --cliff-bash-profile=phpunit | sed 1d)"
+        eval "$(/usr/bin/php /path/to/your/phpunit-completion.php --cliff-bash-profile=phpunit | sed 1d)"
 
-The sed part will remove alias command, so when you type "phpunit", it will still mean the phpunit
+The `sed` part will remove alias command, so when you type "phpunit", it will still mean the phpunit
 you can work with (not the helper script); but completion will use the helper script.
-
-By the way, there is a pre-made phpunit helper script in examples directory.
 
 ## NOTES
 
