@@ -112,7 +112,7 @@ when installing the completion into bash profile.
 
 To do that:
 
- 1. Write the script with desired config, like the one in `examples/phpunit-completion.php`
+ 1. Write a script with desired config, like the one in `examples/phpunit-completion.php`
  2. Put this in your profile:
 
         eval "$(/usr/bin/php /path/to/your/phpunit-completion.php --cliff-bash-profile=phpunit | sed 1d)"
@@ -126,7 +126,7 @@ To signal an error in your script, simply throw an exception. It will be caught 
 its message will be displayed into stderr, and the script will exit with non-zero status
 (useful for shell scripting).
 
-To change error exit code, you need to change Cliff::$error_exit_code. Default error exit code is 1.
+To change error exit code, you need to change `Cliff::$error_exit_code`. Default error exit code is 1.
 
 ## REQUIREMENTS
 
@@ -172,3 +172,15 @@ If you don't mind, I'll leave this todo list here.
       * Generate config in Cliff XML
   * Load config from PEAR::Console_CommandLine XML
   * Option defined as '-ab' should have name 'a', not 'ab'
+
+## CONTACTS
+
+The Cliff framework was created by Aleksandr "Jonhhy Woo" Galkin in 2011.
+E-mail: agalkin@agalkin.ru
+Github page: https://github.com/johnnywoo/cliff
+
+Cliff is released under LGPL v3. This means you can use it (as is) in any software,
+including proprietary, but you cannot remove any copyrights from its code, and if
+you change the framework itself, the modified code should be released under LGPL as well.
+
+Copyright 2011 Aleksandr Galkin.
