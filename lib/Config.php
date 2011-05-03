@@ -540,7 +540,9 @@ class Config
 	 * so we need to accumulate them and then call later.
 	 *
 	 * @param array $props
+	 * @param mixed $value
 	 * @param string $item_desc
+	 *
 	 */
 	protected function run_callback($props, $value, $item_desc = '')
 	{
@@ -572,35 +574,7 @@ class Config
 		return $options;
 	}
 
-	public function complete($args, $current_arg)
-	{
-		array_pop($args); // last one is being completed
-		$parser = new Parser($args);
-		$this->load_from_parser($parser, true);
-
-		$completions = array();
-		if($parser->are_options_allowed())
-		{
-			if(substr($current_arg, 0, 1) == '-')
-				$this->complete_options($completions);
-
-			if(preg_match('/^((--[^\s=]+)=)(.*)$/', $current_arg, $m))
-			{
-				$op =& $this->option_name_aliases[$m[2]]; // 2 --x
-				if(isset($op))
-					$this->complete_option_value($completions, $m[1], $m[3], $op); // 1 --x=  3 value
-			}
-		}
-
-		foreach($this->get_allowed_params() as $param)
-		{
-			$this->complete_param_value(&$completions, $current_arg, $param);
-		}
-
-		return $completions;
-	}
-
-	private function get_allowed_params()
+	public function get_allowed_params()
 	{
 		if(empty($this->params_stack))
 			return array();
@@ -616,62 +590,5 @@ class Config
 		while(next($this->params_stack) && empty($p['is_required']));
 
 		return $params;
-	}
-
-	private function complete_options(&$completions)
-	{
-		foreach($this->option_name_aliases as $alias=>$name)
-		{
-			// ignore one-letter aliases
-			if(strlen($alias) == 2)
-				continue;
-
-			$opt = $this->options[$name];
-			if(!($opt['visibility'] & self::V_COMPLETION))
-				continue;
-
-			if(is_null($opt['default']))
-				$alias .= '=';
-			else
-				$alias .= ' ';
-
-			$completions[] = $alias;
-		}
-	}
-
-	private function complete_option_value(&$completions, $option_prefix, $entered_value, $option_name)
-	{
-		if(empty($this->options[$option_name]['completion']))
-			return;
-		$cpt = $this->options[$option_name]['completion'];
-
-		if(!is_array($cpt) && is_callable($cpt))
-			$cpt = call_user_func($cpt, $entered_value);
-
-		if(is_array($cpt) || ($cpt instanceof Traversable))
-		{
-			foreach($cpt as $line)
-			{
-				$completions[] = $option_prefix . $line . ' ';
-			}
-		}
-	}
-
-	private function complete_param_value(&$completions, $entered_value, $param)
-	{
-		if(empty($param['completion']))
-			return;
-		$cpt = $param['completion'];
-
-		if(!is_array($cpt) && is_callable($cpt))
-			$cpt = call_user_func($cpt, $entered_value);
-
-		if(is_array($cpt) || ($cpt instanceof Traversable))
-		{
-			foreach($cpt as $line)
-			{
-				$completions[] = $line . ' ';
-			}
-		}
 	}
 }

@@ -28,6 +28,7 @@ namespace cliff;
 
 // let's not affect autoload, we don't have too much files here
 require_once __DIR__.'/Tokenizer.php';
+require_once __DIR__.'/Config.php';
 
 class Completion
 {
@@ -67,7 +68,7 @@ class Completion
 
 		try
 		{
-			$options = $this->config->complete($words, $last_arg ? $last_arg->word : '');
+			$options = $this->complete_config($words, $last_arg ? $last_arg->word : '');
 			return $this->reduce_options($options, $last_arg, $comp_wordbreaks);
 		}
 		catch(\Exception $e)
@@ -75,6 +76,94 @@ class Completion
 			return array();
 		}
 	}
+
+	protected function complete_config($args, $current_arg)
+	{
+		array_pop($args); // last one is being completed
+		$parser = new Parser($args);
+		$this->config->load_from_parser($parser, true);
+
+		$completions = array();
+		if($parser->are_options_allowed())
+		{
+			if(substr($current_arg, 0, 1) == '-')
+				$this->complete_options($completions);
+
+			if(preg_match('/^((--[^\s=]+)=)(.*)$/', $current_arg, $m))
+			{
+				$op =& $this->config->option_name_aliases[$m[2]]; // 2 --x
+				if(isset($op))
+					$this->complete_option_value($completions, $m[1], $m[3], $op); // 1 --x=  3 value
+			}
+		}
+
+		foreach($this->config->get_allowed_params() as $param)
+		{
+			$this->complete_param_value(&$completions, $current_arg, $param);
+		}
+
+		return $completions;
+	}
+
+
+	protected function complete_options(&$completions)
+	{
+		foreach($this->config->option_name_aliases as $alias=>$name)
+		{
+			// ignore one-letter aliases
+			if(strlen($alias) == 2)
+				continue;
+
+			$opt = $this->config->options[$name];
+			if(!($opt['visibility'] & Config::V_COMPLETION))
+				continue;
+
+			if(is_null($opt['default']))
+				$alias .= '=';
+			else
+				$alias .= ' ';
+
+			$completions[] = $alias;
+		}
+	}
+
+	protected function complete_option_value(&$completions, $option_prefix, $entered_value, $option_name)
+	{
+		if(empty($this->config->options[$option_name]['completion']))
+			return;
+		$cpt = $this->config->options[$option_name]['completion'];
+
+		if(!is_array($cpt) && is_callable($cpt))
+			$cpt = call_user_func($cpt, $entered_value);
+
+		if(is_array($cpt) || ($cpt instanceof Traversable))
+		{
+			foreach($cpt as $line)
+			{
+				$completions[] = $option_prefix . $line . ' ';
+			}
+		}
+	}
+
+	protected function complete_param_value(&$completions, $entered_value, $param)
+	{
+		if(empty($param['completion']))
+			return;
+		$cpt = $param['completion'];
+
+		if(!is_array($cpt) && is_callable($cpt))
+			$cpt = call_user_func($cpt, $entered_value);
+
+		if(is_array($cpt) || ($cpt instanceof Traversable))
+		{
+			foreach($cpt as $line)
+			{
+				$completions[] = $line . ' ';
+			}
+		}
+	}
+
+
 
 	/**
 	 * Tailors list of options to the prefix which is being completed
@@ -135,7 +224,7 @@ class Completion
 		$comp_point      = prev($args);
 		$comp_line       = prev($args);
 
-		/** @var $cmp completion */
+		/** @var $cmp Completion */
 		$cmp = new static($config);
 		foreach($cmp->complete($comp_line, $comp_point, $comp_wordbreaks) as $opt)
 		{
