@@ -176,11 +176,13 @@ If you don't mind, I'll leave this todo list here.
 ## CONTACTS
 
 The Cliff framework was created by Aleksandr "Jonhhy Woo" Galkin in 2011.
+
 E-mail: agalkin@agalkin.ru
+
 Github page: https://github.com/johnnywoo/cliff
 
 Cliff is released under LGPL v3. This means you can use it (as is) in any software,
 including proprietary, but you cannot remove any copyrights from its code, and if
-you change the framework itself, the modified code should be released under LGPL as well.
+you change the framework itself, the modified code should be released under (L)GPL as well.
 
 Copyright 2011 Aleksandr Galkin.
