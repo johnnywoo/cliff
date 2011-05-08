@@ -26,7 +26,6 @@ License along with Cliff. If not, see <http://www.gnu.org/licenses/>.
 
 namespace cliff;
 
-// let's not affect autoload, we don't have too much files here
 require_once __DIR__.'/Exception/ParseError.php';
 
 class Parser

@@ -27,9 +27,8 @@ License along with Cliff. If not, see <http://www.gnu.org/licenses/>.
 namespace cliff;
 
 // let's not affect autoload, we don't have too much files here
-require_once __DIR__.'/Exception.php';
-require_once __DIR__.'/Exception/ParseError.php';
-require_once __DIR__.'/Parser.php';
+require_once __DIR__.'/Config/Param.php';
+require_once __DIR__.'/Config/Option.php';
 
 /**
  * A config for CLI options and params
@@ -43,8 +42,8 @@ require_once __DIR__.'/Parser.php';
  * ->desc(text)
  * ->allow_unknown_options(state)
  *
- * General props: is_array, is_required, validator, callback.
- * Flag/option props: default, if_absent, name, visibility.
+ * General props: name, is_array, is_required, validator, callback, if_absent, visibility.
+ * Flag/option props: default.
  *
  *
  * ELEMENT PROPERTIES in $props:
@@ -56,6 +55,10 @@ require_once __DIR__.'/Parser.php';
  * Non-numeric keys may be:
  *
  * (common preferences for flags, options and params)
+ *
+ *  * name         Name for $_REQUEST, if you don't like the default one (which is 'name' for --name
+ *                 and 'n' for -n). For params, the name is set in param()'s first arg, but you can
+ *                 nevertheless override it by setting name in $props.
  *
  *  * is_array     If true, the arg is allowed to be set multiple times, and all values are
  *                 accumulated in an array.
@@ -90,26 +93,24 @@ require_once __DIR__.'/Parser.php';
  *                 Use a closure if you need to pass a class method as callback!
  *                 The callback receives the word being completed in first argument.
  *
- * (preferences for flags and options)
+ *  * if_absent    Value for $_REQUEST if the arg was not set in script arguments.
+ *                 Defaults to NULL for options/params (or an empty array if is_array is set to TRUE)
+ *                 and FALSE for flags.
  *
- *  * default      Value for $_REQUEST if the option/flag is present in script arguments
- *                 without a value (--x, but not --x=1). If default is not set or set NULL
- *                 for an option, that option will require a value, causing an error without it.
- *                 Defaults to TRUE for flags.
- *
- *  * if_absent    Value for $_REQUEST if the option/flag was not set in script arguments.
- *                 Defaults to NULL for options and FALSE for flags.
- *
- *  * name         Name for $_REQUEST, if you don't like the default one
- *                 (which is 'name' for --name and 'n' for -n).
- *
- *  * visibility   Defines places where the option/flag will be visible.
+ *  * visibility   Defines places where the item will be visible.
  *                 Bitmask of following constants:
  *                  * Config::V_USAGE
  *                  * Config::V_HELP
- *                  * Config::V_COMPLETION
+ *                  * Config::V_COMPLETION (for options this only affects completion of the option name)
  *                  * Config::V_REQUEST
  *                 Defaults to all of them.
+ *
+ * (preferences for flags and options)
+ *
+ *  * default      Value for $_REQUEST if the option/flag is present in script arguments
+ *                 without a value (--x, but not --x=1). If default is not set or set to NULL
+ *                 for an option, that option will require a value, causing an error without it.
+ *                 Defaults to TRUE for flags.
  */
 class Config
 {
@@ -157,16 +158,10 @@ class Config
 	 */
 	public function param($name, $props = array())
 	{
-		if(isset($props['name'])) // fool-proof
-			$name = $props['name'];
+		if(!isset($props['name']))
+			$props['name'] = $name;
 
-		if(isset($this->params[$name]) || isset($this->options[$name]))
-			throw new Exception('Config error: duplicate name '.$name);
-
-		if(!array_key_exists('is_required', $props))
-			$props['is_required'] = true;
-
-		$this->params[$name] = $props;
+		$this->items[] = new Config_Param($props);
 
 		return $this;
 	}
@@ -204,9 +199,14 @@ class Config
 	 */
 	public function flag($name, $props = array())
 	{
-		$props['default']   = true;
-		$props['if_absent'] = false;
-		$props['_force_default_value'] = true;
+		if(!isset($props['default']))
+			$props['default'] = true;
+
+		if(!isset($props['if_absent']))
+			$props['if_absent'] = false;
+
+		$props['force_default_value'] = true;
+
 		return $this->option($name, $props);
 	}
 
@@ -237,54 +237,10 @@ class Config
 	 */
 	public function option($name, $props = array())
 	{
-		$names = preg_split('/\s+/', $name, -1, PREG_SPLIT_NO_EMPTY);
-		if(empty($names))
-			throw new Exception('Config error: wrong option name definition "'.$name.'"');
+		if(!isset($props['aliases']))
+			$props['aliases'] = $name;
 
-		$main_name = empty($props['name']) ? ltrim(reset($names), '-') : $props['name'];
-
-		if(isset($this->params[$main_name]) || isset($this->options[$main_name]))
-			throw new Exception('Config error: duplicate name '.$main_name);
-
-		// props
-		if(!isset($props['default']))
-			$props['default'] = null;
-		if(!isset($props['if_absent']))
-			$props['if_absent'] = null;
-		if(!array_key_exists('visibility', $props))
-			$props['visibility'] = self::V_ALL;
-		$props['name'] = $main_name;
-		$props['_first_alias'] = reset($names);
-
-		// registering name aliases
-		foreach($names as $n)
-		{
-			if(preg_match('/^-[^-]/', $n))
-			{
-				// -abc is three aliases, not one
-				for($i = 1; $i < strlen($n); $i++)
-				{
-					$letter = substr($n, $i, 1);
-					$alias = '-'.$letter;
-					$this->add_option_alias($main_name, $alias);
-					if(is_null($props['default']))
-						$this->short_options_with_values .= $letter;
-				}
-			}
-			else if(preg_match('/^--\S/', $n))
-			{
-				$this->add_option_alias($main_name, $n);
-			}
-			else
-			{
-				throw new Exception('Config error: wrong option name "'.$n.'"');
-			}
-		}
-
-		$this->options[$main_name] = $props;
-		$this->option_values[$main_name] = $props['if_absent'];
-		if(!empty($props['is_required']))
-			$this->required_options[] = $main_name;
+		$this->items[] = new Config_Option($props);
 
 		return $this;
 	}
@@ -296,33 +252,17 @@ class Config
 	 * @see Config::option()
 	 *
 	 * @param string $name
-	 * @param mixed  $default
 	 * @param array  $props
 	 * @return Config self
 	 */
-	public function many_options($name, $default = null, $props = array())
+	public function many_options($name, $props = array())
 	{
 		$props['is_array'] = true;
-		return $this->option($name, $default, $props);
+		return $this->option($name, $props);
 	}
 
-	/**
-	 * Registers a branch in usage
-	 *
-	 * CLI command is nested with other commands:
-	 * script --script_option subcommand --subcommand_option [...]
-	 * So, the whole usage config becomes a tree of subcommands. This way, if your
-	 * script has two subcommands, you will have a top-level config with two branches
-	 * in it, one for each subcommand. A branch is just another Config object.
-	 *
-	 * @param Config $config
-	 * @return Config self
-	 */
-	public function branch(Config $config)
-	{
-		$this->branches[] = $config;
-		return $this;
-	}
+
+
 
 
 
@@ -332,263 +272,79 @@ class Config
 	// MACHINERY
 	//
 
-	public $params = array();
-	protected $params_stack = array();
-
-	public $option_name_aliases       = array();
-	public $options                   = array();
-	public $required_options          = array();
-	public $short_options_with_values = '';
-	public $allow_unknown_options     = false;
-
-	public $param_values  = array();
-	public $option_values = array();
-
-	/** @var Config[] */
-	public $branches = array();
-
 	public $description = '';
+	public $allow_unknown_options = '';
 
+	/**
+	 * @var Config_Item[]
+	 */
+	private $items;
 
-	protected function add_option_alias($name, $alias)
+	public function get_items()
 	{
-		if(isset($this->option_name_aliases[$alias]))
-			throw new Exception('Config error: trying to readd option '.$alias);
-
-		$this->option_name_aliases[$alias] = $name;
-	}
-
-	public function load_from_parser(Parser $parser, $incomplete_mode = false)
-	{
-		$this->params_stack = array_keys($this->params);
-		$required_options   = array_flip($this->required_options);
-
-		$last_item = false;
-		while($item = $parser->read($this->short_options_with_values))
-		{
-			if($item['type'] == Parser::TYPE_OPTION)
-				$this->register_option($item, $required_options, $incomplete_mode);
-
-			if($item['type'] == Parser::TYPE_PARAM)
-				$this->register_param($item, $this->params_stack, $incomplete_mode);
-
-			$last_item = $item;
-		}
-
-		if(!$incomplete_mode)
-			$this->validate_command($this->params_stack, $required_options);
-
-		return $last_item;
-	}
-
-	protected function validate_command($params_stack, $required_options)
-	{
-		// allowed leftower params:
-		// non-required params
-		// required array params with non-empty arrays
-		foreach($params_stack as $name)
-		{
-			$param = $this->params[$name];
-
-			if(empty($param['is_required']))
-				continue;
-
-			if(!empty($param['is_array']) && !empty($this->param_values[$name]))
-				continue;
-
-			throw new Exception_ParseError('Need more arguments', Exception_ParseError::E_NO_PARAM);
-		}
-
-		if(!empty($required_options))
-		{
-			$list = array();
-			foreach($required_options as $name=>$foo)
-			{
-				$list[] = $this->options[$name]['_first_alias'];
-			}
-			throw new Exception_ParseError('Need value'.(count($list)>1?'s':'').' for '.join(', ', $list), Exception_ParseError::E_NO_OPTION);
-		}
-	}
-
-	protected function register_option($item, &$required_options, $incomplete_mode = false)
-	{
-		if(!isset($this->option_name_aliases[$item['name']]))
-		{
-			if(!$this->allow_unknown_options)
-				throw new Exception_ParseError('Unknown option '.$item['name'], Exception_ParseError::E_WRONG_OPTION);
-
-			$name = ltrim($item['name'], '-');
-			$option = array(
-				'default'      => is_null($item['value']) ? true : null, // unknown flags get TRUE
-				'name'         => $name,
-				'_first_alias' => $item['name'],
-			);
-		}
-		else
-		{
-			$name = $this->option_name_aliases[$item['name']];
-			$option = $this->options[$name];
-		}
-
-		if(is_null($option['default']) && is_null($item['value']))
-			throw new Exception_ParseError('No value for '.$item['name'], Exception_ParseError::E_NO_OPTION_VALUE);
-
-		$value = is_null($item['value']) ? $option['default'] : $item['value'];
-
-		if(!$this->validate($value, $option))
-			throw new Exception_ParseError('Incorrect value for '.$item['name'], Exception_ParseError::E_NO_OPTION_VALUE);
-
-		if(!empty($option['is_array']))
-			$this->option_values[$name][] = $value;
-		else
-			$this->option_values[$name] = $value;
-
-		if(!$incomplete_mode)
-			$this->run_callback($option, $value, $item['name']);
-
-		unset($required_options[$name]); // unset ignores undefined keys
-
-		return $option;
-	}
-
-	protected function register_param($item, &$params_stack, $incomplete_mode = false)
-	{
-		if(empty($params_stack))
-			throw new Exception_ParseError('Too many arguments', Exception_ParseError::E_TOO_MANY_PARAMS);
-
-		$name = reset($params_stack);
-		$param = $this->params[$name];
-
-		$value = $item['value'];
-
-		$is_valid = $this->validate($value, $param);
-
-		if(!$is_valid && !$param['is_required'])
-		{
-			// okay, it is not valid, but the param is not required,
-			// so we just continue to the next param
-			array_shift($params_stack);
-			return $this->register_param($item, $params_stack);
-		}
-
-		if(!empty($param['is_array']))
-		{
-			if(!$is_valid)
-			{
-				// array needs one or more values
-				if(empty($this->param_values[$name]))
-					throw new Exception_ParseError('Unexpected "'. $value .'" in place of '.$name, Exception_ParseError::E_WRONG_PARAM);
-
-				// okay, now it is not valid, but there is something in the array
-				// so we just continue to the next param
-				array_shift($params_stack);
-				return $this->register_param($item, $params_stack);
-			}
-
-			$this->param_values[$name][] = $value;
-		}
-		else
-		{
-			if(!$is_valid)
-				throw new Exception_ParseError('Unexpected "'. $value .'" in place of '.$name, Exception_ParseError::E_WRONG_PARAM);
-
-			$this->param_values[$name] = $value;
-			array_shift($params_stack);
-		}
-
-		if(!$incomplete_mode)
-			$this->run_callback($param, $value, $name);
-
-		return $param;
-	}
-
-	public function get_request()
-	{
-		$option_values = array();
-		foreach($this->option_values as $name=>$value)
-		{
-			if(isset($this->options[$name]))
-			{
-				$option = $this->options[$name];
-				if(!($option['visibility'] & self::V_REQUEST))
-					continue;
-			}
-			$option_values[$name] = $value;
-		}
-		return $this->param_values + $option_values;
-	}
-
-	protected function validate(&$value, $props)
-	{
-		if(isset($props['validator']))
-		{
-			$validator = $props['validator'];
-
-			if(is_callable($validator))
-				return call_user_func_array($validator, array(&$value));
-
-			if(is_string($validator) && !preg_match($validator, $value))
-				return false;
-		}
-		return true;
+		return $this->items;
 	}
 
 	/**
-	 * Registers a callback for later calling
+	 * Returns list of options in the config
 	 *
-	 * Callbacks are called after all arguments are parsed,
-	 * so we need to accumulate them and then call later.
+	 * Options can be distinguished by alias, so the returned array
+	 * has aliases as keys. Remember that one option can have multiple
+	 * aliases, and therefore may appear in the list may times!
 	 *
-	 * @param array $props
-	 * @param mixed $value
-	 * @param string $item_desc
-	 *
+	 * @return Config_Option[]
 	 */
-	protected function run_callback($props, $value, $item_desc = '')
+	public function get_options()
 	{
-		if(!empty($props['callback']))
+		$list = array();
+		/** @var $item Config_Option */
+		foreach($this->items as $item)
 		{
-			if(!is_callable($props['callback']))
-				throw new Exception('Non-callable callback for '.$item_desc);
+			if(!($item instanceof Config_Option))
+				continue;
 
-			call_user_func($props['callback'], $value);
+			foreach($item->aliases as $alias)
+			{
+				$list[$alias] = $item;
+			}
 		}
+		return $list;
 	}
 
-	public function get_options_for_usage($visibility = self::V_ALL)
+	/**
+	 * Returns list of params in the config
+	 *
+	 * Params are strictly positional, so the returned list nas numeric keys.
+	 *
+	 * @return Config_Param[]
+	 */
+	public function get_params()
 	{
-		$options = $this->options;
-
-		foreach($options as $k=>$option)
+		$list = array();
+		foreach($this->items as $item)
 		{
-			if(!($option['visibility'] & $visibility))
-				unset($options[$k]);
+			if($item instanceof Config_Param)
+				$list[] = $item;
 		}
-
-		foreach($this->option_name_aliases as $alias=>$name)
-		{
-			if(isset($options[$name]))
-				$options[$name]['aliases'][] = $alias;
-		}
-
-		return $options;
+		return $list;
 	}
 
-	public function get_allowed_params()
+	public function get_short_options_with_values()
 	{
-		if(empty($this->params_stack))
-			return array();
+		$str = '';
 
-		$params = array();
-		reset($this->params_stack);
-		do
+		/** @var $item Config_Option */
+		foreach($this->items as $item)
 		{
-			// we need all non-required params and the first required
-			$p = $this->params[current($this->params_stack)];
-			$params[] = $p;
-		}
-		while(next($this->params_stack) && empty($p['is_required']));
+			if(!($item instanceof Config_Option))
+				continue;
 
-		return $params;
+			if(!$item->needs_value())
+				continue;
+
+			$str .= join('', $item->get_short_alias_letters());
+		}
+
+		return $str;
 	}
 }

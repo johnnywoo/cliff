@@ -26,8 +26,8 @@ License along with Cliff. If not, see <http://www.gnu.org/licenses/>.
 
 namespace cliff;
 
-// let's not affect autoload, we don't have too much files here
 require_once __DIR__.'/Config.php';
+require_once __DIR__.'/Config/Option.php';
 
 class Usage
 {
@@ -68,18 +68,17 @@ class Usage
 
 		$usage = 'Usage: '.$script_name;
 
-		$options = $this->config->get_options_for_usage($this->long_descriptions ? Config::V_HELP : Config::V_USAGE);
+		/** @var $options Config_Option[] */
+		$options = $this->get_items_by_visibility(__NAMESPACE__.'\Config_Option');
 		if(count($options))
 		{
 			$aliases = array();
 			$short_options = '';
 			foreach($options as $option)
 			{
-				$option = $this->makeup_option_aliases($option);
-				foreach($option['aliases'] as $alias)
+				foreach($this->makeup_option_aliases($option) as $alias)
 				{
-					$needs_value = is_null($option['default']);
-					if(substr($alias, 0, 2) != '--' && !$needs_value)
+					if(substr($alias, 0, 2) != '--' && !$option->needs_value())
 						$short_options .= substr($alias, 1);
 					else
 						$aliases[] = $alias;
@@ -90,9 +89,10 @@ class Usage
 			$usage .= count($aliases) > $this->max_options_listed ? ' [options]' : ' [' . join('] [', $aliases) . ']';
 		}
 
-		foreach($this->config->params as $name=>$param)
+		/** @var $param Config_Param */
+		foreach($this->get_items_by_visibility(__NAMESPACE__.'\Config_Param') as $param)
 		{
-			$usage .= ' <'.$name.'>';
+			$usage .= ' <'.$param->name.'>';
 		}
 
 		return $usage;
@@ -101,13 +101,14 @@ class Usage
 	public function make_options_block()
 	{
 		$lines = array();
-		foreach($this->config->get_options_for_usage($this->long_descriptions ? Config::V_HELP : Config::V_USAGE) as $option)
+		/** @var $options Config_Option[] */
+		$options = $this->get_items_by_visibility(__NAMESPACE__.'\Config_Option');
+		foreach($options as $option)
 		{
-			$option = $this->makeup_option_aliases($option);
-			$term = join(', ', $option['aliases']);
+			$term = join(', ', $this->makeup_option_aliases($option));
 			$title = '';
-			if(!empty($option[0]))
-				$title = $this->reduce_description($option[0]);
+			if($option->description != '')
+				$title = $this->reduce_description($option->description);
 
 			$lines[] = array($term, $title);
 		}
@@ -117,13 +118,11 @@ class Usage
 	public function make_params_block()
 	{
 		$lines = array();
-		foreach($this->config->params as $name=>$param)
+		/** @var $param Config_Param */
+		foreach($this->get_items_by_visibility(__NAMESPACE__.'\Config_Param') as $param)
 		{
-			$title = '';
-			if(!empty($param[0]))
-				$title = $this->reduce_description($param[0]);
-
-			$lines[] = array($name, $title);
+			$title = $this->reduce_description($param->description);
+			$lines[] = array($param->name, $title);
 		}
 		return $this->make_definition_list($lines, 'PARAMETERS');
 	}
@@ -189,20 +188,21 @@ class Usage
 		return substr($out, 0, -1);
 	}
 
-	private function makeup_option_aliases($option)
+	private function makeup_option_aliases(Config_Option $option)
 	{
-		if(is_null($option['default']))
+		$aliases = $option->aliases;
+		if($option->needs_value())
 		{
-			foreach($option['aliases'] as $k=>$v)
+			foreach($aliases as &$v)
 			{
-				$option['aliases'][$k] .= (substr($v, 0, 2) == '--') ? '=...' : ' ...';
+				$v .= (substr($v, 0, 2) == '--') ? '=...' : ' ...';
 			}
 		}
 
 		// moving short names up
-		usort($option['aliases'], array('static', 'option_alias_cmp'));
+		usort($aliases, array('static', 'option_alias_cmp'));
 
-		return $option;
+		return $aliases;
 	}
 
 	private static function option_alias_cmp($a, $b) {
@@ -219,5 +219,20 @@ class Usage
 			list($text) = explode("\n", $text, 2);
 
 		return $text;
+	}
+
+	protected function get_items_by_visibility($class)
+	{
+		$visibility = $this->long_descriptions ? Config::V_HELP : Config::V_USAGE;
+
+		$list = array();
+
+		foreach($this->config->get_items() as $option)
+		{
+			if($option instanceof $class && $option->visibility & $visibility)
+				$list[] = $option;
+		}
+
+		return $list;
 	}
 }

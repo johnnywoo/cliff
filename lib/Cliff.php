@@ -27,9 +27,10 @@ License along with Cliff. If not, see <http://www.gnu.org/licenses/>.
 namespace cliff;
 
 // let's not affect autoload, we don't have too much files here
-require_once __DIR__.'/Exception/ParseError.php';
 require_once __DIR__.'/Config.php';
+require_once __DIR__.'/Request.php';
 require_once __DIR__.'/Parser.php';
+require_once __DIR__.'/Exception/ParseError.php';
 require_once __DIR__.'/Usage.php';
 require_once __DIR__.'/Completion.php';
 
@@ -52,15 +53,29 @@ class Cliff
 	public static function run(Config $config = null)
 	{
 		if(is_null($config))
-		{
-			$config = self::config()
-				->allow_unknown_options()
-				->many_params('args', array(
-					'is_required' => false,
-				));
-		}
+			$config = static::get_default_config();
 
-		// set exception handler
+		static::set_exception_handler($config);
+		static::add_default_options($config);
+
+		// run
+		$request = new Request();
+		$request->load($config, new Parser());
+		$request->validate();
+		return $request;
+	}
+
+	protected static function get_default_config()
+	{
+		return static::config()
+			->allow_unknown_options()
+			->many_params('args', array(
+				'is_required' => false,
+			));
+	}
+
+	protected static function set_exception_handler(Config $config)
+	{
 		set_exception_handler(function(\Exception $e) use($config) {
 
 			// do not show error about required param when there is no args (there will be usage)
@@ -85,56 +100,38 @@ class Cliff
 
 			exit(Cliff::$error_exit_code);
 		});
-
-		static::add_default_options($config);
-
-		// run
-		$config->load_from_parser(new Parser());
-		foreach($config->get_request() as $k=>$v)
-		{
-			$_REQUEST[$k] = $v;
-		}
 	}
 
 	protected static function add_default_options(Config $config)
 	{
-		if(!isset($config->options['cliff-complete--']))
-		{
-			// completion handler for bash
-			$config->flag('--cliff-complete--', array(
-				'visibility' => Config::V_NONE,
-				'callback' => function() use($config) {
-					Completion::action_complete($config);
-					exit;
-				},
-			));
+		// completion handler for bash
+		$config->flag('--cliff-complete--', array(
+			'visibility' => Config::V_NONE,
+			'callback' => function() use($config) {
+				Completion::action_complete($config);
+				exit;
+			},
+		));
 
-			if(!isset($config->options['cliff-bash-profile']))
-			{
-				// completion handler for bash
-				$config->option('--cliff-bash-profile', array(
-					'Generate alias and completion commands for bash profile',
-					'visibility' => Config::V_HELP,
-					'callback' => function($alias) {
-						Completion::action_bash_profile($alias);
-						exit;
-					},
-				));
-			}
-		}
+		// completion handler for bash
+		$config->option('--cliff-bash-profile', array(
+			'Generate alias and completion commands for bash profile',
+			'visibility' => Config::V_HELP,
+			'callback' => function($alias) {
+				Completion::action_bash_profile($alias);
+				exit;
+			},
+		));
 
-		if(!isset($config->options['help']))
-		{
-			$config->flag('--help', array(
-				'Show descriptions of options and params',
-				'visibility' => Config::V_ALL & ~Config::V_REQUEST, // everywhere except in $_REQUEST
-				'callback' => function() use($config) {
-					$usage = new Usage($config);
-					$usage->long_descriptions = true;
-					echo $usage->make();
-					exit;
-				},
-			));
-		}
+		$config->flag('--help', array(
+			'Show descriptions of options and params',
+			'visibility' => Config::V_ALL & ~Config::V_REQUEST, // everywhere except in $_REQUEST
+			'callback' => function() use($config) {
+				$usage = new Usage($config);
+				$usage->long_descriptions = true;
+				echo $usage->make();
+				exit;
+			},
+		));
 	}
 }

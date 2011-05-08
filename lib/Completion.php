@@ -27,8 +27,11 @@ License along with Cliff. If not, see <http://www.gnu.org/licenses/>.
 namespace cliff;
 
 // let's not affect autoload, we don't have too much files here
-require_once __DIR__.'/Tokenizer.php';
 require_once __DIR__.'/Config.php';
+require_once __DIR__.'/Tokenizer.php';
+require_once __DIR__.'/Parser.php';
+require_once __DIR__.'/Request.php';
+require_once __DIR__.'/Config/Item.php';
 
 class Completion
 {
@@ -81,7 +84,13 @@ class Completion
 	{
 		array_pop($args); // last one is being completed
 		$parser = new Parser($args);
-		$this->config->load_from_parser($parser, true);
+
+		$request = new Request();
+		$request->incomplete_mode   = true;
+		$request->disable_callbacks = true;
+		$request->load($this->config, $parser);
+
+		$options = $this->config->get_options();
 
 		$completions = array();
 		if($parser->are_options_allowed())
@@ -91,15 +100,18 @@ class Completion
 
 			if(preg_match('/^((--[^\s=]+)=)(.*)$/', $current_arg, $m))
 			{
-				$op =& $this->config->option_name_aliases[$m[2]]; // 2 --x
+				$op =& $options[$m[2]]; // 2 --x
 				if(isset($op))
-					$this->complete_option_value($completions, $m[1], $m[3], $op); // 1 --x=  3 value
+					$this->complete_item_value($completions, $m[3], $op, $m[1]); // 1 --x=  3 value
 			}
 		}
 
-		foreach($this->config->get_allowed_params() as $param)
+		foreach($request->get_allowed_params() as $param)
 		{
-			$this->complete_param_value(&$completions, $current_arg, $param);
+			if(!($param->visibility & Config::V_COMPLETION))
+				continue;
+
+			$this->complete_item_value(&$completions, $current_arg, $param);
 		}
 
 		return $completions;
@@ -108,58 +120,27 @@ class Completion
 
 	protected function complete_options(&$completions)
 	{
-		foreach($this->config->option_name_aliases as $alias=>$name)
+		foreach($this->config->get_options() as $alias=>$option)
 		{
 			// ignore one-letter aliases
 			if(strlen($alias) == 2)
 				continue;
 
-			$opt = $this->config->options[$name];
-			if(!($opt['visibility'] & Config::V_COMPLETION))
+			if(!($option->visibility & Config::V_COMPLETION))
 				continue;
 
-			if(is_null($opt['default']))
-				$alias .= '=';
-			else
-				$alias .= ' ';
+			// if there is a value, we shouldn't add a space, so the value can be completed right away
+			$alias .= $option->needs_value() ? '=' : ' ';
 
 			$completions[] = $alias;
 		}
 	}
 
-	protected function complete_option_value(&$completions, $option_prefix, $entered_value, $option_name)
+	protected function complete_item_value(&$completions, $entered_value, Config_Item $item, $prefix = '')
 	{
-		if(empty($this->config->options[$option_name]['completion']))
-			return;
-		$cpt = $this->config->options[$option_name]['completion'];
-
-		if(!is_array($cpt) && is_callable($cpt))
-			$cpt = call_user_func($cpt, $entered_value);
-
-		if(is_array($cpt) || ($cpt instanceof Traversable))
+		foreach($item->complete($entered_value) as $line)
 		{
-			foreach($cpt as $line)
-			{
-				$completions[] = $option_prefix . $line . ' ';
-			}
-		}
-	}
-
-	protected function complete_param_value(&$completions, $entered_value, $param)
-	{
-		if(empty($param['completion']))
-			return;
-		$cpt = $param['completion'];
-
-		if(!is_array($cpt) && is_callable($cpt))
-			$cpt = call_user_func($cpt, $entered_value);
-
-		if(is_array($cpt) || ($cpt instanceof Traversable))
-		{
-			foreach($cpt as $line)
-			{
-				$completions[] = $line . ' ';
-			}
+			$completions[] = $prefix . $line . ' ';
 		}
 	}
 
