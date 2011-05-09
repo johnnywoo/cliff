@@ -32,10 +32,15 @@ License along with Cliff. If not, see <http://www.gnu.org/licenses/>.
 include __DIR__ . '/../examples/options.php';
 
 ?>
---EXPECT--
+--EXPECTF--
 Usage: example_options_002_help.php [-dtn] [options] <number>
 
 Takes a number and multiplies it.
+
+Note how the indent in description will be normalized when usage/help are generated: meaningless
+indent will be stripped off.
+
+	This paragraph, however, will be indented relative to previous one.
 
 OPTIONS
 
@@ -53,6 +58,12 @@ OPTIONS
 
   --cliff-bash-profile=...
     Generate alias and completion commands for bash profile
+
+    To enable bash completion, you should place the following in your ~/.profile (all on one line):
+
+    eval "$('%s/php'
+    '%s/tests/example_options_002_help.php'
+    --cliff-bash-profile=your_alias)"
 
   --help
     Show descriptions of options and params

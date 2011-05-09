@@ -215,7 +215,7 @@ class Completion
 
 	public static function action_bash_profile($alias)
 	{
-		$fname = realpath($_SERVER['PHP_SELF']);
+		$fname = static::get_script_filename();
 
 		// if the file has a shebang, we assume it can execute itself
 		if(is_readable($fname) && file_get_contents($fname, 0, null, 0, 2) == '#!')
@@ -225,7 +225,7 @@ class Completion
 		}
 		else
 		{
-			$alias_cmd    = 'php ' . escapeshellarg($fname);
+			$alias_cmd    = static::get_php_command(false) . ' ' . escapeshellarg($fname);
 			$complete_cmd = $alias_cmd;
 		}
 
@@ -239,5 +239,73 @@ class Completion
 		echo '    IFS=$saveIFS' . "\n";
 		echo "}\n";
 		echo 'complete -o bashdefault -o default -o nospace -F ' . $funcname . ' ' . escapeshellarg($alias) . "\n";
+	}
+
+	public static function make_profile_command()
+	{
+		return 'eval "$(' . static::get_php_command() . ' ' . escapeshellarg(static::get_script_filename()) . ' --cliff-bash-profile=your_alias)"';
+	}
+
+	public static function guess_bash_profile_name()
+	{
+		return static::guess_file(array(
+			'~/.profile',
+			'~/.bash_profile',
+		), 'bash profile');
+	}
+
+	public static function get_script_filename()
+	{
+		return realpath($_SERVER['PHP_SELF']);
+	}
+
+	/**
+	 * Returns a command to run the php cli
+	 *
+	 * 'Command' means it is already escaped, while 'filename' is not.
+	 *
+	 * @param bool $check_for_shebang
+	 * @return string
+	 */
+	public static function get_php_command($check_for_shebang = true)
+	{
+		// weird magic, but well, there's no way to do this right (right?)
+
+		// if we're a nice shell script, let's use that
+		if($check_for_shebang)
+		{
+			$fname = static::get_script_filename();
+			if(is_readable($fname))
+			{
+				list($line) = explode("\n", file_get_contents($fname, 0, null, 0, 1024), 2);
+				if(substr($line, 0, 2) == '#!')
+					return substr($line, 2);
+			}
+		}
+
+		// if the script is called like `php blah.php`, the php command gets placed into $_
+		if(isset($_SERVER['_']) && substr($_SERVER['_'], -4) == '/php')
+			return escapeshellarg($_SERVER['_']);
+
+		// beggars cannot be choosers, any php binary will do
+		if(file_exists('/dev/null'))
+		{
+			$php = trim(`which php 2>/dev/null`);
+			if($php != '')
+				return escapeshellarg($php);
+		}
+
+		// well, whatever
+		return 'php';
+	}
+
+	protected static function guess_file($locations, $default)
+	{
+		foreach($locations as $loc)
+		{
+			if(@file_exists(str_replace('~', isset($_ENV['HOME']) ? $_ENV['HOME'] : '~', $loc)))
+				return $loc;
+		}
+		return $default;
 	}
 }

@@ -115,7 +115,12 @@ class Cliff
 
 		// completion handler for bash
 		$config->option('--cliff-bash-profile', array(
-			'Generate alias and completion commands for bash profile',
+			'Generate alias and completion commands for bash profile
+
+			To enable bash completion, you should place the following in your '.Completion::guess_bash_profile_name().' (all on one line):
+
+			'.Completion::make_profile_command(),
+
 			'visibility' => Config::V_HELP,
 			'callback' => function($alias) {
 				Completion::action_bash_profile($alias);

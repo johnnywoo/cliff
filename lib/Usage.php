@@ -54,7 +54,7 @@ class Usage
 		$desc = '';
 		if($this->config->description != '')
 		{
-			$desc = $this->reduce_description($this->config->description);
+			$desc = $this->format_description($this->config->description);
 			$desc = "\n".$this->wrap($desc)."\n";
 		}
 
@@ -108,7 +108,7 @@ class Usage
 			$term = join(', ', $this->makeup_option_aliases($option));
 			$title = '';
 			if($option->description != '')
-				$title = $this->reduce_description($option->description);
+				$title = $this->format_description($option->description);
 
 			$lines[] = array($term, $title);
 		}
@@ -121,7 +121,7 @@ class Usage
 		/** @var $param Config_Param */
 		foreach($this->get_items_by_visibility(__NAMESPACE__.'\Config_Param') as $param)
 		{
-			$title = $this->reduce_description($param->description);
+			$title = $this->format_description($param->description);
 			$lines[] = array($param->name, $title);
 		}
 		return $this->make_definition_list($lines, 'PARAMETERS');
@@ -172,10 +172,6 @@ class Usage
 
 	private function wrap($text, $padding_left = 0, $pad_first_line = false)
 	{
-		// formatting it a little
-		// 1. removing
-		$text = preg_replace("/(\S)[ \t]*\n[ \t]*([^\n])/", '$1 $2', $text);
-
 		$width = $this->width - $padding_left;
 		$out = '';
 		$padding = str_repeat(' ', $padding_left);
@@ -185,7 +181,10 @@ class Usage
 				$out .= $padding;
 			$out .= $line."\n";
 		}
-		return substr($out, 0, -1);
+		$out = substr($out, 0, -1);
+		// removing trailing spaces
+		$out = preg_replace('/[ \t]+(?=\n|$)/', '', $out);
+		return $out;
 	}
 
 	private function makeup_option_aliases(Config_Option $option)
@@ -213,8 +212,14 @@ class Usage
 		return strcmp($a, $b);
 	}
 
-	private function reduce_description($text)
+	private function format_description($text)
 	{
+		// removing single line breaks (empty lines are preserved)
+		$text = preg_replace("/(\S)[ \t]*\n[ \t]*([^\n])/", '$1 $2', $text);
+
+		// removing meaningless indent
+		$text = static::unindent($text);
+
 		if(!$this->long_descriptions)
 			list($text) = explode("\n", $text, 2);
 
@@ -234,5 +239,43 @@ class Usage
 		}
 
 		return $list;
+	}
+
+	/**
+	 * Strips extra indentation from a string
+	 *
+	 * unindent() finds a common indent in your string and strips it away,
+	 * so you can write descriptions for config items without having to
+	 * break indentation. It also trims the string.
+	 *
+	 * @param string $desc
+	 * @return string
+	 */
+	public static function unindent($desc)
+	{
+		$indent = '';
+		$indent_length = 0;
+		$lines = explode("\n", $desc);
+		foreach($lines as $i=>$line)
+		{
+			if($line == '')
+				continue;
+
+			// we grab the first non-empty string prefix, except for the first line
+			if($indent == '' && trim($line) != '' && preg_match('/^[\t ]+/', $line, $m))
+			{
+				// if first line does not have indent, we ignore it and look for the next line
+				if(!strlen($m[0]) && $i == 0)
+					continue;
+
+				$indent = $m[0];
+				$indent_length = strlen($indent);
+			}
+
+			if(substr($line, 0, $indent_length) == $indent)
+				$lines[$i] = substr($line, $indent_length);
+		}
+
+		return trim(join("\n", $lines));
 	}
 }

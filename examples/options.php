@@ -11,7 +11,14 @@ use \cliff\Cliff;
 
 Cliff::run(
 	Cliff::config()
-	->desc('Takes a number and multiplies it.')
+	->desc('
+		Takes a number and multiplies it.
+
+		Note how the indent in description will be normalized when usage/help are generated:
+		meaningless indent will be stripped off.
+
+			This paragraph, however, will be indented relative to previous one.
+	')
 	->flag('--double -d', array(
 		'Multiply the number by 2',
 	))

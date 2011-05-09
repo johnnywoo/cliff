@@ -171,7 +171,7 @@ If you don't mind, I'll leave this todo list here.
       * Load config from Cliff XML (not sure if PEAR::Console_CommandLine format is enough)
       * Generate config in Cliff XML
   * Load config from PEAR::Console_CommandLine XML
-  * Option defined as '-ab' should have name 'a', not 'ab'
+  * Need some way to include code samples in descriptions (formatting breaks those)
 
 ## CONTACTS
 
