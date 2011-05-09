@@ -175,7 +175,7 @@ If you don't mind, I'll leave this todo list here.
 
 ## CONTACTS
 
-The Cliff framework was created by Aleksandr "Jonhhy Woo" Galkin in 2011.
+The Cliff framework was created by Aleksandr "Johnny Woo" Galkin in 2011.
 
 E-mail: agalkin@agalkin.ru
 
