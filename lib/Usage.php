@@ -214,9 +214,6 @@ class Usage
 
 	private function format_description($text)
 	{
-		// removing single line breaks (empty lines are preserved)
-		$text = preg_replace("/(\S)[ \t]*\n[ \t]*([^\n])/", '$1 $2', $text);
-
 		// removing meaningless indent
 		$text = static::unindent($text);
 
