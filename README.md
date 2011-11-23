@@ -14,7 +14,12 @@ The main features are:
 The basic idea of Cliff is to allow you to work with CLI arguments exactly the same way
 you work with http request variables: by using `$_REQUEST`. All you need is to describe
 options and parameters of your script, and then everything just works. In no-config mode,
-you don't event have to describe anything.
+you don't even have to describe anything.
+
+## DISCLAIMER
+
+Version: 0.1 alpha. Things may be severely broken; I didn't get the chance to use it in 
+production yet.
 
 ## HOWTO
 
