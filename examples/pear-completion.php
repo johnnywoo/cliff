@@ -86,7 +86,7 @@ Cliff::run(
 			{
 				list($cmd) = explode(' ', $line, 2);
 				if($cmd != '')
-					$list[] = $cmd;
+					$list[] = trim($cmd);
 			}
 			return $list;
 		}
