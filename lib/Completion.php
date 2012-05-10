@@ -111,7 +111,7 @@ class Completion
 			if(!($param->visibility & Config::V_COMPLETION))
 				continue;
 
-			$this->complete_item_value(&$completions, $current_arg, $param);
+			$this->complete_item_value($completions, $current_arg, $param);
 		}
 
 		return $completions;
