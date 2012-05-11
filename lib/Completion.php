@@ -225,7 +225,7 @@ class Completion
 		}
 		else
 		{
-			$alias_cmd    = static::get_php_command(false) . ' ' . escapeshellarg($fname);
+			$alias_cmd    = static::get_php_command(true) . ' ' . escapeshellarg($fname);
 			$complete_cmd = $alias_cmd;
 		}
 
@@ -264,15 +264,15 @@ class Completion
 	 *
 	 * 'Command' means it is already escaped, while 'filename' is not.
 	 *
-	 * @param bool $check_for_shebang
+	 * @param bool $assume_no_shebang
 	 * @return string
 	 */
-	public static function get_php_command($check_for_shebang = true)
+	public static function get_php_command($assume_no_shebang = false)
 	{
 		// weird magic, but well, there's no way to do this right (right?)
 
 		// if we're a nice shell script, let's use that
-		if($check_for_shebang)
+		if(!$assume_no_shebang)
 		{
 			$fname = static::get_script_filename();
 			if(is_readable($fname))
@@ -283,17 +283,13 @@ class Completion
 			}
 		}
 
-		// if the script is called like `php blah.php`, the php command gets placed into $_
-		if(isset($_SERVER['_']) && substr($_SERVER['_'], -4) == '/php')
-			return escapeshellarg($_SERVER['_']);
+		// a convenient constant in PHP 5.4
+		if(defined('PHP_BINARY'))
+			return escapeshellarg(PHP_BINARY);
 
-		// beggars cannot be choosers, any php binary will do
-		if(file_exists('/dev/null'))
-		{
-			$php = trim(`which php 2>/dev/null`);
-			if($php != '')
-				return escapeshellarg($php);
-		}
+		// a less convenient constant that's been there forever (at least from PHP 4.4)
+		if(defined('PHP_BINDIR') && file_exists(PHP_BINDIR . '/php'))
+			return escapeshellarg(PHP_BINDIR . '/php');
 
 		// well, whatever
 		return 'php';
