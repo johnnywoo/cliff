@@ -23,7 +23,7 @@ Cliff::run(
 		'Multiply the number by 3',
 	))
 	->flag('--negate -n', array(
-		'Change sign of the number'
+		'Change sign of the number',
 	))
 	->option('--multiply -m', array(
 		'Multiply by an arbitrary number',
