@@ -163,6 +163,7 @@ If you don't mind, I'll leave this todo list here.
     * Completion for single-letter option values
     * Completion of weird chars and escaping
     * Aliases when installing completion into bash profile (like g='script' x='script -a -b')
+  * Look into trollop for potential insight
   * Ability to specify default values for single-letter options
   * Allow a string instead of $props array
   * Helper for colors
@@ -177,6 +178,17 @@ If you don't mind, I'll leave this todo list here.
       * Generate config in Cliff XML
   * Load config from PEAR::Console_CommandLine XML
   * Need some way to include code samples in descriptions (formatting breaks those)
+
+## KNOWN BUGS
+
+### Completion makes incorrect/extra chars after sudo
+
+When you try to use sudo with your script, completion results may look like
+`sudo pear list-upgrades\  ` (with incorrect escaped space at the end).
+This is actually a bug in bash-completion suite (or other script you're using
+to enable sudo completion), which does not work correctly with `-o nospace`.
+Try completing `sudo git checkout`, it will have weird double space at the end too.
+If it doesn't and Cliff completion still glitches, please write me a letter.
 
 ## CONTACTS
 
