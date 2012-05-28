@@ -34,11 +34,11 @@ use cliff\Cliff;
 
 Cliff::run(
 	Cliff::config()
-	->option('--val', array('default' => 'ZZZ'))
-	->option('--def', array('default' => 'ZZZ'))
-	->option('--absent', array('default' => 'NO WAI', 'if_absent' => 'YA RLY'))
-	->option('--req-val', array('default' => 'ZZZ', 'is_required' => true))
-	->option('--req-def', array('default' => 'ZZZ', 'is_required' => true))
+	->option('--val', array('flag_value' => 'ZZZ'))
+	->option('--def', array('flag_value' => 'ZZZ'))
+	->option('--absent', array('flag_value' => 'NO WAI', 'default' => 'YA RLY'))
+	->option('--req-val', array('flag_value' => 'ZZZ', 'is_required' => true))
+	->option('--req-def', array('flag_value' => 'ZZZ', 'is_required' => true))
 	// absence of a required option will cause an error
 );
 

@@ -16,7 +16,7 @@ Cliff::run(
 	->flag('--roman -r', 'Output results in Roman numerals')
 	->option('--precision', array(
 		'Output results with given precision',
-		'if_absent' => '2',
+		'default' => '2',
 		'validator' => function($value) {
 			return is_numeric($value) && (intval($value) == $value);
 		},

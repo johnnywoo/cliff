@@ -31,9 +31,9 @@ require_once __DIR__ . '/../Exception.php';
 
 class Config_Option extends Config_Item
 {
-	public $default   = null;
+	public $flag_value = null;
 
-	public $force_default_value = false;
+	public $force_flag_value = false;
 
 	public $aliases = array();
 
@@ -50,7 +50,7 @@ class Config_Option extends Config_Item
 
 	public function needs_value()
 	{
-		return is_null($this->default);
+		return is_null($this->flag_value);
 	}
 
 	public function get_short_alias_letters()

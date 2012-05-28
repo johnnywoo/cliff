@@ -42,8 +42,8 @@ require_once __DIR__.'/Config/Option.php';
  * ->desc(text)
  * ->allow_unknown_options(state)
  *
- * General props: name, is_array, is_required, validator, callback, if_absent, visibility.
- * Flag/option props: default.
+ * General props: name, is_array, is_required, validator, callback, default, visibility.
+ * Flag/option props: flag_value.
  *
  *
  * ELEMENT PROPERTIES in $props:
@@ -93,7 +93,7 @@ require_once __DIR__.'/Config/Option.php';
  *                 Use a closure if you need to pass a class method as callback!
  *                 The callback receives the word being completed in first argument.
  *
- *  * if_absent    Value for $_REQUEST if the arg was not set in script arguments.
+ *  * default      Value for $_REQUEST if the arg was not set in script arguments.
  *                 Defaults to NULL for options/params (or an empty array if is_array is set to TRUE)
  *                 and FALSE for flags.
  *
@@ -110,8 +110,8 @@ require_once __DIR__.'/Config/Option.php';
  *
  * (preferences for flags and options)
  *
- *  * default      Value for $_REQUEST if the option/flag is present in script arguments
- *                 without a value (--x, but not --x=1). If default is not set or set to NULL
+ *  * flag_value   Value for $_REQUEST if the option/flag is present in script arguments
+ *                 without a value (--x, but not --x=1). If flag_value is not set or set to NULL
  *                 for an option, that option will require a value, causing an error without it.
  *                 Defaults to TRUE for flags.
  */
@@ -241,13 +241,13 @@ class Config
 		if(!is_array($props))
 			$props = array($props);
 
+		if(!isset($props['flag_value']))
+			$props['flag_value'] = true;
+
 		if(!isset($props['default']))
-			$props['default'] = true;
+			$props['default'] = false;
 
-		if(!isset($props['if_absent']))
-			$props['if_absent'] = false;
-
-		$props['force_default_value'] = true;
+		$props['force_flag_value'] = true;
 
 		return $this->option($name, $props);
 	}

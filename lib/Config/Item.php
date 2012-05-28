@@ -46,7 +46,7 @@ abstract class Config_Item
 
 	public $use_for_commands = false;
 
-	public $if_absent = null;
+	public $default = null;
 
 	public $visibility = Config::V_ALL;
 
@@ -61,8 +61,8 @@ abstract class Config_Item
 				$this->$k = $v;
 		}
 
-		if($this->is_array && !array_key_exists('if_absent', $props))
-			$this->if_absent = array();
+		if($this->is_array && !array_key_exists('default', $props))
+			$this->default = array();
 	}
 
 	public function validate(&$value)

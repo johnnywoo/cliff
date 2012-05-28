@@ -98,7 +98,7 @@ class Request
 		if(func_num_args() == 1)
 		{
 			// initialization mode
-			$value = $item->if_absent;
+			$value = $item->default;
 			// absent value should not be wrapped in array
 			$is_array = false;
 		}
@@ -139,14 +139,14 @@ class Request
 
 			$option = new Config_Option(array(
 				'aliases' => $item['name'],
-				'default' => is_null($item['value']) ? true : null, // unknown flags get TRUE
+				'flag_value' => is_null($item['value']) ? true : null, // unknown flags get TRUE
 			));
 		}
 
 		if($option->needs_value() && is_null($item['value']))
 			throw new Exception_ParseError('No value for '.$item['name'], Exception_ParseError::E_NO_OPTION_VALUE);
 
-		$value = (is_null($item['value']) || $option->force_default_value) ? $option->default : $item['value'];
+		$value = (is_null($item['value']) || $option->force_flag_value) ? $option->flag_value : $item['value'];
 
 		if(!$option->validate($value))
 			throw new Exception_ParseError('Incorrect value for '.$item['name'], Exception_ParseError::E_NO_OPTION_VALUE);
