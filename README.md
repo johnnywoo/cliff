@@ -69,12 +69,12 @@ Read phpdoc comments in `lib/Config.php` for all configuration possibilities.
 
 ### Examples
 
- * [params.php](examples/params.php): the simplest script that shows how to accept multiple params
- * [options.php](examples/options.php): how to use flags and options
- * [callbacks.php](examples/callbacks.php): how to use callbacks and validators
- * [commands.php](examples/commands.php): how to define subcommands a-la `git checkout`
- * [pear-completion.php](examples/pear-completion.php): a sample config (+ bash completion) for pear executable
- * [phpunit-completion.php](examples/phpunit-completion.php): a sample config (+ bash completion) for phpunit executable
+ * [params.php](https://github.com/johnnywoo/cliff/blob/master/examples/params.php): the simplest script that shows how to accept multiple params
+ * [options.php](https://github.com/johnnywoo/cliff/blob/master/examples/options.php): how to use flags and options
+ * [callbacks.php](https://github.com/johnnywoo/cliff/blob/master/examples/callbacks.php): how to use callbacks and validators
+ * [commands.php](https://github.com/johnnywoo/cliff/blob/master/examples/commands.php): how to define subcommands a-la `git checkout`
+ * [pear-completion.php](https://github.com/johnnywoo/cliff/blob/master/examples/pear-completion.php): a sample config (+ bash completion) for pear executable
+ * [phpunit-completion.php](https://github.com/johnnywoo/cliff/blob/master/examples/phpunit-completion.php): a sample config (+ bash completion) for phpunit executable
 
 ## NO-CONFIG MODE
 
