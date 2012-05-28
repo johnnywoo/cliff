@@ -44,7 +44,7 @@ Cliff::run(
 	->option('--type', array(
 		'Issue type',
 		'completion' => function($entered_value) {
-			// you don't have to sort of even match the correct variants,
+			// you don't have to sort or even match the correct variants,
 			// that is all done automatically
 			return array('bug', 'feature', 'task', 'meta', 'project');
 		},
