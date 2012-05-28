@@ -18,7 +18,7 @@ you don't even have to describe anything.
 
 ## DISCLAIMER
 
-Version: 0.1 alpha. Things may be severely broken; I didn't get the chance to use it in 
+Version: 0.1 alpha. Things may be severely broken; I didn't get the chance to use it in
 production yet.
 
 ## HOWTO
