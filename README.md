@@ -6,10 +6,8 @@ The main features are:
   * Arguments/options parser
   * Terse chained-call configuration syntax
   * No-config mode
-  * Automatic bash completion
   * Usage and help generation
-  * Validation and callbacks for args
-  * Exception handling
+  * Automatic bash completion
 
 The basic idea of Cliff is to allow you to work with CLI arguments exactly the same way
 you work with http request variables: by using `$_REQUEST`. All you need is to describe
@@ -18,7 +16,7 @@ you don't even have to describe anything.
 
 ## DISCLAIMER
 
-Version: 0.1 alpha. Things may be severely broken; I didn't get the chance to use it in
+Version: 0.2 alpha. Things may be severely broken; I didn't get the chance to use it in
 production yet.
 
 ## HOWTO
@@ -68,6 +66,15 @@ or with incorrect ones, the script will show a short description of available op
 parameters. 'Parameter' in Cliff means any non-option argument.
 
 Read phpdoc comments in `lib/Config.php` for all configuration possibilities.
+
+### Examples
+
+ * [params.php](examples/params.php): the simplest script that shows how to accept multiple params
+ * [options.php](examples/options.php): how to use flags and options
+ * [callbacks.php](examples/callbacks.php): how to use callbacks and validators
+ * [commands.php](examples/commands.php): how to define subcommands a-la `git checkout`
+ * [pear-completion.php](examples/pear-completion.php): a sample config (+ bash completion) for pear executable
+ * [phpunit-completion.php](examples/phpunit-completion.php): a sample config (+ bash completion) for phpunit executable
 
 ## NO-CONFIG MODE
 
@@ -170,8 +177,9 @@ If you don't mind, I'll leave this todo list here.
   * Helper for reading (char, string, password, stdin)
   * Helper for writing (out, err, interface = skipped if not tty, table)
   * Ability to store STDIN in a variable (is it possible to iterate over it instead?)
-  * Ability to design complex subcommand structures via branches and subcommands
-    (to distinguish branches we can just forbid two consequent branches with no params)
+  * [+] Ability to design complex subcommand structures via branches and subcommands
+    * Defining branches without params (like `x --list whatever`)
+      (to distinguish branches we can just forbid two consequent branches with no params)
     * Adopting external commands as subcommands
     * Adopting external Cliff scripts as subcommands with usage/completion import
       * Load config from Cliff XML (not sure if PEAR::Console_CommandLine format is enough)

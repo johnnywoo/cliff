@@ -58,15 +58,15 @@ class Usage
 			$desc = "\n".$this->wrap($desc)."\n";
 		}
 
-		return $this->make_usage() . "\n" . $desc . $this->make_options_block() . $this->make_params_block();
+		return 'Usage: ' . $this->make_usage() . "\n" . $desc . $this->make_options_block() . $this->make_params_block();
 	}
 
 	public function make_usage($script_name = null)
 	{
 		if(is_null($script_name))
-			$script_name = basename($_SERVER['argv'][0]);
+			$script_name = $this->config->script_name;
 
-		$usage = 'Usage: '.$script_name;
+		$usage = $script_name;
 
 		/** @var $options Config_Option[] */
 		$options = $this->get_items_by_visibility(__NAMESPACE__.'\Config_Option');
@@ -153,10 +153,12 @@ class Usage
 			$line = $this->wrap($row[0], $this->term_padding_left, true);
 			if(strlen($row[0]) > $max_length || $this->long_descriptions)
 			{
+				// long desc/long param summary: make an indent on the next line
 				$line .= "\n".str_repeat(' ', $column_offset);
 			}
-			else
+			else if($row[1] != '') // do not make trailing spaces
 			{
+				// short desc: add spaces to form descriptions into a column
 				$line = str_pad($line, $column_offset, ' ');
 			}
 

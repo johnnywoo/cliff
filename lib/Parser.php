@@ -46,6 +46,11 @@ class Parser
 		$this->args = $args;
 	}
 
+	public function allow_options($state = true)
+	{
+		$this->options_allowed = $state;
+	}
+
 	public function are_options_allowed()
 	{
 		return $this->options_allowed;
@@ -58,6 +63,7 @@ class Parser
 	 * a short option with value behaves differently from one without it.
 	 *
 	 * @param string $short_options_with_values
+	 * @throws Exception_ParseError
 	 * @return array|bool
 	 */
 	public function read($short_options_with_values = '')

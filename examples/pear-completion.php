@@ -59,7 +59,21 @@ uninstall              Un-install Package
 update-channels        Update the Channel List
 upgrade                Upgrade Package
 upgrade-all            Upgrade All Packages [Deprecated in favor of calling upgrade with no parameters]
+help
 ";
+
+function get_commands_list()
+{
+	global $commands;
+	$list = array();
+	foreach(explode("\n", $commands) as $line)
+	{
+		list($cmd) = explode(' ', $line, 2);
+		if($cmd != '')
+			$list[] = trim($cmd);
+	}
+	return $list;
+}
 
 Cliff::run(
 	Cliff::config()
@@ -79,16 +93,43 @@ Cliff::run(
 	->flag('-V')
 
 	->param('command', array(
-		'completion' => function() {
-			global $commands;
-			$list = array();
-			foreach(explode("\n", $commands) as $line)
-			{
-				list($cmd) = explode(' ', $line, 2);
-				if($cmd != '')
-					$list[] = trim($cmd);
-			}
-			return $list;
-		}
+		'use_for_commands' => true,
+		'validator'        => '/./', // we need to supply this so Cliff won't require an actual defined command name
+		'completion'       => 'get_commands_list',
 	))
+
+	// making help complete subcommand names
+	->command('help', Cliff::config()
+		->flag('--test')
+		->param('cmd', array(
+			'completion' => 'get_commands_list',
+		))
+	)
+
+	// More examples of subcommand competion/configuration below.
+	// Unfortunately, the second most useful completion (for `install`)
+	// is not possible: list of all packages is very slow and it is not acceptable
+	// for a background UI operation such as completion.
+
+	->command('list', Cliff::config()
+		->option('--channel')
+		->flag('--allchannels')
+		->flag('--channelinfo')
+	)
+
+	->command('upgrade', Cliff::config()
+		->option('--channel')
+		->flag('--force')
+		->flag('--loose')
+		->flag('--nodeps')
+		->flag('--register-only')
+		->flag('--nobuild')
+		->flag('--nocompress')
+		->option('--installroot')
+		->flag('--ignore-errors')
+		->flag('--alldeps')
+		->flag('--onlyreqdeps')
+		->flag('--offline')
+		->flag('--pretend')
+	)
 );

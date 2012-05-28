@@ -1,7 +1,7 @@
 --TEST--
-Error test: required param not set
+Branches example: executing a subcommand
 --ARGS--
-a 2>&1
+add 1 2 3
 --FILE--
 <?php
 
@@ -29,24 +29,8 @@ License along with Cliff. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-include __DIR__ . '/../lib/Cliff.php';
-use cliff\Cliff;
-
-Cliff::run(
-	Cliff::config()
-	->param('x')
-	->param('y')
-);
+include __DIR__ . '/../examples/commands.php';
 
 ?>
 --EXPECT--
-Need more arguments
-
-Usage: errors_002_required_param.php [--help] <x> <y>
-
-OPTIONS
-  --help  Show descriptions of options and params
-
-PARAMETERS
-  x
-  y
+6

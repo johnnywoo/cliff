@@ -105,6 +105,9 @@ require_once __DIR__.'/Config/Option.php';
  *                  * Config::V_REQUEST
  *                 Defaults to all of them.
  *
+ *  * use_for_commands  Use a param for detection of commands.
+ *                      A config should only have one such param.
+ *
  * (preferences for flags and options)
  *
  *  * default      Value for $_REQUEST if the option/flag is present in script arguments
@@ -135,6 +138,24 @@ class Config
 		return $this;
 	}
 
+	/**
+	 * Sets a script name for usage/help
+	 *
+	 * @param string $script_name
+	 * @return Config self
+	 */
+	public function script_name($script_name)
+	{
+		$this->script_name = $script_name;
+		return $this;
+	}
+
+	/**
+	 * If true, unknown options and flags will not be treated as parse errors
+	 *
+	 * @param bool $state
+	 * @return Config self
+	 */
 	public function allow_unknown_options($state = true)
 	{
 		$this->allow_unknown_options = $state;
@@ -154,15 +175,27 @@ class Config
 	 *
 	 * @param string $name
 	 * @param array $props
+	 * @throws Exception
 	 * @return Config self
 	 */
 	public function param($name, $props = array())
 	{
+		if($this->command_param_name != '')
+			throw new Exception('Extra params are not allowed after a command detection one');
+
 		if(!is_array($props))
 			$props = array($props);
 
 		if(!isset($props['name']))
 			$props['name'] = $name;
+
+		if(!empty($props['use_for_commands']))
+		{
+			if($this->command_param_name != '')
+				throw new Exception('There must be only one command detection param; you should specify your own param BEFORE adding commands');
+
+			$this->command_param_name = $props['name'];
+		}
 
 		$this->items[] = new Config_Param($props);
 
@@ -276,6 +309,33 @@ class Config
 		return $this->option($name, $props);
 	}
 
+	/**
+	 * Registers a subcommand config
+	 *
+	 * If the branch detection param has given value, the rest of options will be
+	 * parsed with the subcommand config.
+	 *
+	 * If there's no param with use_for_commands yet, first call to command() will add
+	 * a standard one with name 'command'. Validator, completion and description will be
+	 * supplied into the param if the corresponding field is not filled yet.
+	 *
+	 * @param string $param_value
+	 * @param Config $config
+	 * @return Config self
+	 */
+	public function command($param_value, self $config)
+	{
+		if($this->command_param_name == '')
+			$this->param('command', array('use_for_commands' => true));
+
+		Cliff::add_default_options($config);
+		$config->script_name($param_value);
+
+		$this->branches[$param_value] = $config;
+
+		return $this;
+	}
+
 
 
 
@@ -289,15 +349,28 @@ class Config
 
 	public $description = '';
 	public $allow_unknown_options = '';
+	public $script_name = '';
 
 	/**
 	 * @var Config_Item[]
 	 */
 	private $items;
 
+	private $command_param_name = '';
+
+	/**
+	 * @var Config[]
+	 */
+	private $branches = array();
+
 	public function get_items()
 	{
 		return $this->items;
+	}
+
+	public function get_script_name()
+	{
+		return $this->script_name;
 	}
 
 	/**
@@ -339,9 +412,49 @@ class Config
 		foreach($this->items as $item)
 		{
 			if($item instanceof Config_Param)
+			{
+				if($this->command_param_name == $item->name)
+					$this->prepare_command_item($item);
+
 				$list[] = $item;
+			}
 		}
 		return $list;
+	}
+
+	/**
+	 * Prepares the command detection item
+	 *
+	 * In theory it's possible to have options/flags as command detectors,
+	 * so we'll do it the general way where possible even though we only support
+	 * detection via params.
+	 *
+	 * @param Config_Item $param
+	 */
+	private function prepare_command_item(Config_Item $param)
+	{
+		$branches = $this->branches;
+
+		if(empty($param->completion))
+			$param->completion = array_keys($branches);
+
+		if(empty($param->validator))
+		{
+			$param->validator = function($val) use($branches) {
+				return isset($branches[$val]);
+			};
+		}
+
+		if(empty($param->description))
+		{
+			$param->description = "Available commands: ".join(', ', array_keys($branches))."\n";
+			foreach($branches as $name => $config)
+			{
+				$usage = new Usage($config);
+				$param->description .= "\n".$usage->make_usage($name);
+			}
+			$param->description .= "\n\nUse `<subcommand> --help` to learn more.";
+		}
 	}
 
 	public function get_short_options_with_values()
@@ -361,5 +474,16 @@ class Config
 		}
 
 		return $str;
+	}
+
+	/**
+	 * Returns a branch config if it exists
+	 *
+	 * @param string $name
+	 * @return Config|null
+	 */
+	public function get_branch($name)
+	{
+		return isset($this->branches[$name]) ? $this->branches[$name] : null;
 	}
 }

@@ -2,7 +2,6 @@
 
 /**
  * Example config: a basic issue tracker fetcher interface
- *
  */
 
 require_once __DIR__.'/../lib/Cliff.php';

@@ -1,7 +1,7 @@
 --TEST--
 Error test: too many params
 --ARGS--
-x y
+x y 2>&1
 --FILE--
 <?php
 
@@ -37,9 +37,14 @@ Cliff::run(
 	->param('x')
 );
 
-// unfortunately, STDERR is not validated against expected output,
-// so we can only validate the FAIL is not there
-echo 'FAIL';
-
 ?>
 --EXPECT--
+Too many arguments
+
+Usage: errors_003_too_many_params.php [--help] <x>
+
+OPTIONS
+  --help  Show descriptions of options and params
+
+PARAMETERS
+  x

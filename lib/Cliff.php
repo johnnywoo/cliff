@@ -55,14 +55,17 @@ class Cliff
 		if(is_null($config))
 			$config = static::get_default_config();
 
-		static::set_exception_handler($config);
-		static::add_default_options($config);
+		if($config->script_name == '')
+			$config->script_name(basename($_SERVER['argv'][0]));
+
+		$request = new Request();
+
+		static::set_exception_handler($request);
+		static::add_default_options($config, true);
 
 		// run
-		$request = new Request();
-		$request->load($config, new Parser());
+		$request->load($config, new Parser(), $_REQUEST);
 		$request->validate();
-		return $request;
 	}
 
 	protected static function get_default_config()
@@ -74,9 +77,11 @@ class Cliff
 			));
 	}
 
-	protected static function set_exception_handler(Config $config)
+	protected static function set_exception_handler(Request $request)
 	{
-		set_exception_handler(function(\Exception $e) use($config) {
+		set_exception_handler(function(\Exception $e) use($request) {
+
+			/** @var $request Request */
 
 			// do not show error about required param when there is no args (there will be usage)
 			$skip_error_message = false;
@@ -91,7 +96,7 @@ class Cliff
 			if($e instanceof Exception_ParseError)
 			{
 				// show usage
-				$usage = new Usage($config);
+				$usage = new Usage($request->get_innermost_branch_config());
 
 				if(!$skip_error_message)
 					echo "\n";
@@ -102,31 +107,34 @@ class Cliff
 		});
 	}
 
-	protected static function add_default_options(Config $config)
+	public static function add_default_options(Config $config, $is_top_config = false)
 	{
-		// completion handler for bash
-		$config->flag('--cliff-complete--', array(
-			'visibility' => Config::V_NONE,
-			'callback' => function() use($config) {
-				Completion::action_complete($config);
-				exit;
-			},
-		));
+		if($is_top_config)
+		{
+			// completion handler for bash
+			$config->flag('--cliff-complete--', array(
+				'visibility' => Config::V_NONE,
+				'callback' => function() use($config) {
+					Completion::action_complete($config);
+					exit;
+				},
+			));
 
-		// completion handler for bash
-		$config->option('--cliff-bash-profile', array(
-			'Generate alias and completion commands for bash profile
+			// completion handler for bash
+			$config->option('--cliff-bash-profile', array(
+				'Generate alias and completion commands for bash profile
 
-			To enable bash completion, you should place the following in your '.Completion::guess_bash_profile_name().' (all on one line):
+				To enable bash completion, you should place the following in your '.Completion::guess_bash_profile_name().' (all on one line):
 
-			'.Completion::make_profile_command(),
+				'.Completion::make_profile_command(),
 
-			'visibility' => Config::V_HELP,
-			'callback' => function($alias) {
-				Completion::action_bash_profile($alias);
-				exit;
-			},
-		));
+				'visibility' => Config::V_HELP,
+				'callback' => function($alias) {
+					Completion::action_bash_profile($alias);
+					exit;
+				},
+			));
+		}
 
 		$config->flag('--help', array(
 			'Show descriptions of options and params',

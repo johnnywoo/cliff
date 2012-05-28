@@ -88,15 +88,15 @@ class Completion
 		$request = new Request();
 		$request->incomplete_mode   = true;
 		$request->disable_callbacks = true;
-		$request->load($this->config, $parser);
-
-		$options = $this->config->get_options();
+		$request->load($this->config, $parser, $_REQUEST);
 
 		$completions = array();
 		if($parser->are_options_allowed())
 		{
+			$options = $request->get_innermost_branch_config()->get_options();
+
 			if(substr($current_arg, 0, 1) == '-')
-				$this->complete_options($completions);
+				$this->complete_options($options, $completions);
 
 			if(preg_match('/^((--[^\s=]+)=)(.*)$/', $current_arg, $m))
 			{
@@ -118,9 +118,13 @@ class Completion
 	}
 
 
-	protected function complete_options(&$completions)
+	/**
+	 * @param Config_Option[] $options
+	 * @param array $completions
+	 */
+	protected function complete_options($options, &$completions)
 	{
-		foreach($this->config->get_options() as $alias=>$option)
+		foreach($options as $alias=>$option)
 		{
 			// ignore one-letter aliases
 			if(strlen($alias) == 2)

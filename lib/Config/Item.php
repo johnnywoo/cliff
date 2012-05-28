@@ -44,6 +44,8 @@ abstract class Config_Item
 	public $is_array    = false;
 	public $is_required = false;
 
+	public $use_for_commands = false;
+
 	public $if_absent = null;
 
 	public $visibility = Config::V_ALL;
@@ -71,8 +73,8 @@ abstract class Config_Item
 			if(is_callable($validator))
 				return call_user_func_array($validator, array(&$value));
 
-			if(is_string($validator) && !preg_match($validator, $value))
-				return false;
+			if(is_string($validator))
+				return preg_match($validator, $value);
 
 			throw new Exception('Config error: invalid validator for '.$this->name);
 		}

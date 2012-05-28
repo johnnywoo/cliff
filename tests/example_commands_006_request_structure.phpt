@@ -1,7 +1,7 @@
 --TEST--
-Error test: required param not set
+Branches example: request structure with subcommands
 --ARGS--
-a 2>&1
+subtract 10 1
 --FILE--
 <?php
 
@@ -29,24 +29,25 @@ License along with Cliff. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-include __DIR__ . '/../lib/Cliff.php';
-use cliff\Cliff;
+include __DIR__ . '/../examples/commands.php';
 
-Cliff::run(
-	Cliff::config()
-	->param('x')
-	->param('y')
-);
+var_dump($_REQUEST);
 
 ?>
 --EXPECT--
-Need more arguments
-
-Usage: errors_002_required_param.php [--help] <x> <y>
-
-OPTIONS
-  --help  Show descriptions of options and params
-
-PARAMETERS
-  x
-  y
+9
+array(4) {
+  ["roman"]=>
+  bool(false)
+  ["precision"]=>
+  string(1) "2"
+  ["command"]=>
+  string(8) "subtract"
+  ["subtract"]=>
+  array(2) {
+    ["minuend"]=>
+    string(2) "10"
+    ["subtrahend"]=>
+    string(1) "1"
+  }
+}

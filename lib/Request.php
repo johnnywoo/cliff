@@ -36,7 +36,13 @@ require_once __DIR__ . '/Exception/ParseError.php';
 class Request
 {
 	/** @var Config */
-	public $config;
+	private $config;
+
+	/** @var Parser */
+	private $parser;
+
+	/** @var Request */
+	private $detected_branch_request;
 
 	public $incomplete_mode   = false;
 	public $disable_callbacks = false;
@@ -48,9 +54,14 @@ class Request
 
 	protected $registered_items = array();
 
-	public function load(Config $config, Parser $parser)
+	/** @var array */
+	private $target;
+
+	public function load(Config $config, Parser $parser, &$target)
 	{
 		$this->config = $config;
+		$this->parser = $parser;
+		$this->target =& $target;
 
 		$short_options_with_values = $this->config->get_short_options_with_values();
 
@@ -63,7 +74,7 @@ class Request
 			$this->set_request_val($item);
 		}
 
-		while($item = $parser->read($short_options_with_values))
+		while($item = $this->parser->read($short_options_with_values))
 		{
 			if($item['type'] == Parser::TYPE_OPTION)
 				$this->register_option($this->options, $item);
@@ -71,6 +82,9 @@ class Request
 			if($item['type'] == Parser::TYPE_PARAM)
 				$this->register_param($this->params_stack, $item);
 		}
+
+		// removing the reference from $_REQUEST
+		unset($this->target);
 	}
 
 	protected function set_request_val(Config_Item $item, $value = null)
@@ -96,14 +110,14 @@ class Request
 
 		if($is_array)
 		{
-			if(!isset($_REQUEST[$name]) || !is_array($_REQUEST[$name]))
-				$_REQUEST[$name] = array();
+			if(!isset($this->target[$name]) || !is_array($this->target[$name]))
+				$this->target[$name] = array();
 
-			$_REQUEST[$name][] = $value;
+			$this->target[$name][] = $value;
 		}
 		else
 		{
-			$_REQUEST[$name] = $value;
+			$this->target[$name] = $value;
 		}
 	}
 
@@ -193,7 +207,31 @@ class Request
 		if(!$this->disable_callbacks)
 			$param->run_callback($value);
 
+		if($param->use_for_commands)
+		{
+			$branch = $this->config->get_branch($value);
+			if(!$branch)
+				throw new Exception_ParseError('Unknown command "'.$value.'"');
+
+			// the rest of arguments are treated as a separate request to the subcommand
+			$req = new static();
+			$this->detected_branch_request = $req;
+
+			// options are allowed again
+			$this->parser->allow_options();
+
+			$req->load($branch, $this->parser, $this->target[$value]);
+		}
+
 		return $param;
+	}
+
+	public function get_innermost_branch_config()
+	{
+		if($this->detected_branch_request)
+			return $this->detected_branch_request->get_innermost_branch_config();
+
+		return $this->config;
 	}
 
 
@@ -202,6 +240,9 @@ class Request
 	 */
 	public function validate()
 	{
+		if($this->detected_branch_request)
+			$this->detected_branch_request->validate();
+
 		// allowed leftower params:
 		// non-required params
 		// required array params with non-empty arrays
@@ -233,6 +274,9 @@ class Request
 	 */
 	public function get_allowed_params()
 	{
+		if($this->detected_branch_request)
+			return $this->detected_branch_request->get_allowed_params();
+
 		if(empty($this->params_stack))
 			return array();
 
