@@ -158,6 +158,9 @@ class Config
 	 */
 	public function param($name, $props = array())
 	{
+		if(!is_array($props))
+			$props = array($props);
+
 		if(!isset($props['name']))
 			$props['name'] = $name;
 
@@ -178,6 +181,9 @@ class Config
 	 */
 	public function many_params($name, $props = array())
 	{
+		if(!is_array($props))
+			$props = array($props);
+
 		$props['is_array'] = true;
 		return $this->param($name, $props);
 	}
@@ -199,6 +205,9 @@ class Config
 	 */
 	public function flag($name, $props = array())
 	{
+		if(!is_array($props))
+			$props = array($props);
+
 		if(!isset($props['default']))
 			$props['default'] = true;
 
@@ -237,6 +246,9 @@ class Config
 	 */
 	public function option($name, $props = array())
 	{
+		if(!is_array($props))
+			$props = array($props);
+
 		if(!isset($props['aliases']))
 			$props['aliases'] = $name;
 
@@ -257,6 +269,9 @@ class Config
 	 */
 	public function many_options($name, $props = array())
 	{
+		if(!is_array($props))
+			$props = array($props);
+
 		$props['is_array'] = true;
 		return $this->option($name, $props);
 	}

@@ -165,7 +165,7 @@ If you don't mind, I'll leave this todo list here.
     * Aliases when installing completion into bash profile (like g='script' x='script -a -b')
   * Look into trollop for potential insight
   * Ability to specify default values for single-letter options
-  * Allow a string instead of $props array
+  * [+] Allow a string instead of $props array
   * Helper for colors
   * Helper for reading (char, string, password, stdin)
   * Helper for writing (out, err, interface = skipped if not tty, table)
