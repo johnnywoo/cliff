@@ -470,7 +470,7 @@ class Config
 				$usage = new Usage($config);
 				$param->description .= "\n".$usage->make_usage($name);
 			}
-			$param->description .= "\n\nUse `<subcommand> --help` to learn more.";
+			$param->description .= "\n\nUse `<command> --help` to learn more.";
 		}
 	}
 
