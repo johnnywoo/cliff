@@ -331,7 +331,14 @@ class Config
 		Cliff::add_default_options($config);
 		$config->script_name($param_value);
 
-		$this->branches[$param_value] = $config;
+		$aliases = preg_split('/\s+/', $param_value, -1, PREG_SPLIT_NO_EMPTY);
+		$name = reset($aliases);
+
+		$this->branches[$name] = $config;
+		foreach($aliases as $alias)
+		{
+			$this->branch_aliases[$alias] = $name;
+		}
 
 		return $this;
 	}
@@ -362,6 +369,7 @@ class Config
 	 * @var Config[]
 	 */
 	private $branches = array();
+	private $branch_aliases = array();
 
 	public function get_items()
 	{
@@ -434,16 +442,25 @@ class Config
 	private function prepare_command_item(Config_Item $param)
 	{
 		$branches = $this->branches;
+		$aliases  = $this->branch_aliases;
 
 		if(empty($param->completion))
-			$param->completion = array_keys($branches);
+			$param->completion = array_keys($aliases);
 
-		if(empty($param->validator))
-		{
-			$param->validator = function($val) use($branches) {
-				return isset($branches[$val]);
-			};
-		}
+		$old_validator = $param->validator;
+		$param->validator = function(&$val) use($aliases, $old_validator, $param) {
+			/** @var $param Config_Param */
+			if(!Config_Item::run_validator($old_validator, $val, 'Config error: invalid validator for '.$param->name))
+				return false;
+
+			if(isset($aliases[$val]))
+			{
+				$val = $aliases[$val];
+				return true;
+			}
+
+			return false;
+		};
 
 		if(empty($param->description))
 		{
@@ -477,9 +494,20 @@ class Config
 	}
 
 	/**
-	 * Returns a branch config if it exists
+	 * Returns branch name if it exists
 	 *
-	 * @param string $name
+	 * @param string $alias
+	 * @return string
+	 */
+	public function get_branch_name($alias)
+	{
+		return isset($this->branch_aliases[$alias]) ? $this->branch_aliases[$alias] : null;
+	}
+
+	/**
+	 * Returns branch config if it exists
+	 *
+	 * @param string $name  proper name, not an alias!
 	 * @return Config|null
 	 */
 	public function get_branch($name)

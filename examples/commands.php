@@ -40,7 +40,9 @@ Cliff::run(
 		->many_params('summands', 'Numbers that will be added together')
 	)
 
-	->command('subtract', Cliff::config()
+	// 'subtract' is the main command name, 'minus' is an alias (useful for short names like `git st`).
+	// $_REQUEST and command param will always use the main (first) name.
+	->command('subtract minus', Cliff::config()
 		->desc('
 			Subtract a number from another number
 

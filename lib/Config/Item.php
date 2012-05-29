@@ -67,7 +67,11 @@ abstract class Config_Item
 
 	public function validate(&$value)
 	{
-		$validator = $this->validator;
+		return static::run_validator($this->validator, $value, 'Config error: invalid validator for '.$this->name);
+	}
+
+	public static function run_validator($validator, &$value, $error_text)
+	{
 		if(!is_null($validator))
 		{
 			if(is_callable($validator))
@@ -76,7 +80,7 @@ abstract class Config_Item
 			if(is_string($validator))
 				return preg_match($validator, $value);
 
-			throw new Exception('Config error: invalid validator for '.$this->name);
+			throw new Exception($error_text);
 		}
 		return true;
 	}

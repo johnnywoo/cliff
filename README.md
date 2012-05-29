@@ -178,6 +178,8 @@ If you don't mind, I'll leave this todo list here.
   * Helper for writing (out, err, interface = skipped if not tty, table)
   * Ability to store STDIN in a variable (is it possible to iterate over it instead?)
   * [+] Ability to design complex subcommand structures via branches and subcommands
+    * [+] Aliases for command names
+      * Usage/help for command name aliases
     * Defining branches without params (like `x --list whatever`)
       (to distinguish branches we can just forbid two consequent branches with no params)
     * Adopting external commands as subcommands
@@ -186,6 +188,7 @@ If you don't mind, I'll leave this todo list here.
       * Generate config in Cliff XML
   * Load config from PEAR::Console_CommandLine XML
   * Need some way to include code samples in descriptions (formatting breaks those)
+  * Refactoring and benchmarking
 
 ## KNOWN BUGS
 
