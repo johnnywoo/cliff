@@ -42,7 +42,7 @@ class Usage
 
 	public $max_options_listed = 5;
 
-	public $long_descriptions = false;
+	public $is_help_mode = false;
 
 	public function __construct(Config $config)
 	{
@@ -52,7 +52,7 @@ class Usage
 	public function make()
 	{
 		$desc = '';
-		if($this->long_descriptions && $this->config->description != '')
+		if($this->is_help_mode && $this->config->description != '')
 		{
 			$desc = $this->format_description($this->config->description);
 			$desc = "\n".$this->wrap($desc)."\n";
@@ -101,7 +101,7 @@ class Usage
 		return $usage;
 	}
 
-	public function make_options_block()
+	private function make_options_block()
 	{
 		$lines = array();
 		/** @var $options Config_Option[] */
@@ -115,10 +115,10 @@ class Usage
 
 			$lines[] = array($term, $title);
 		}
-		return $this->make_definition_list($lines, $this->long_descriptions ? 'OPTIONS' : '');
+		return $this->make_definition_list($lines, $this->is_help_mode ? 'OPTIONS' : '');
 	}
 
-	public function make_params_block()
+	private function make_params_block()
 	{
 		$lines = array();
 		/** @var $param Config_Param */
@@ -132,7 +132,7 @@ class Usage
 		return $this->make_definition_list($lines, 'PARAMETERS');
 	}
 
-	public function make_commands_block()
+	private function make_commands_block()
 	{
 		$lines = array();
 		foreach($this->config->get_branches() as $config)
@@ -161,7 +161,7 @@ class Usage
 		$max_length = min($max_length, $this->max_term_length);
 
 		$column_offset = $this->term_padding_left + $this->term_padding_right;
-		if(!$this->long_descriptions)
+		if(!$this->is_help_mode)
 			$column_offset += $max_length;
 
 		$text = "\n";
@@ -170,7 +170,7 @@ class Usage
 		foreach($lines as $row)
 		{
 			$line = $this->wrap($row[0], $this->term_padding_left, true);
-			if(strlen($row[0]) > $max_length || $this->long_descriptions)
+			if(strlen($row[0]) > $max_length || $this->is_help_mode)
 			{
 				// long desc/long param summary: make an indent on the next line
 				$line .= "\n".str_repeat(' ', $column_offset);
@@ -183,7 +183,7 @@ class Usage
 
 			$line .= $this->wrap($row[1], $column_offset);
 
-			if($this->long_descriptions)
+			if($this->is_help_mode)
 				$text .= "\n";
 
 			$text .= $line."\n";
@@ -238,15 +238,15 @@ class Usage
 		// removing meaningless indent
 		$text = static::unindent($text);
 
-		if(!$this->long_descriptions)
+		if(!$this->is_help_mode)
 			list($text) = explode("\n", $text, 2);
 
 		return $text;
 	}
 
-	protected function get_items_by_visibility($class)
+	private function get_items_by_visibility($class)
 	{
-		$visibility = $this->long_descriptions ? Config::V_HELP : Config::V_USAGE;
+		$visibility = $this->is_help_mode ? Config::V_HELP : Config::V_USAGE;
 
 		$list = array();
 

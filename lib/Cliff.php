@@ -141,7 +141,7 @@ class Cliff
 			'visibility' => Config::V_ALL & ~Config::V_REQUEST, // everywhere except in $_REQUEST
 			'callback' => function() use($config) {
 				$usage = new Usage($config);
-				$usage->long_descriptions = true;
+				$usage->is_help_mode = true;
 				echo $usage->make();
 				exit;
 			},
