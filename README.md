@@ -189,6 +189,7 @@ If you don't mind, I'll leave this todo list here.
   * Load config from PEAR::Console_CommandLine XML
   * Need some way to include code samples in descriptions (formatting breaks those)
   * Refactoring and benchmarking
+    * An interface/base class for lazy configs (scripts with lots of commands)
 
 ## KNOWN BUGS
 
