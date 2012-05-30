@@ -37,10 +37,7 @@ Need more arguments
 
 Usage: add [--help] <summands>
 
-Add any numbers together
-
-OPTIONS
   --help  Show descriptions of options and params
 
 PARAMETERS
-  summands  Numbers that will be added together
+  <summands>  Numbers that will be added together

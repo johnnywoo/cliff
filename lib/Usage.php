@@ -52,13 +52,16 @@ class Usage
 	public function make()
 	{
 		$desc = '';
-		if($this->config->description != '')
+		if($this->long_descriptions && $this->config->description != '')
 		{
 			$desc = $this->format_description($this->config->description);
 			$desc = "\n".$this->wrap($desc)."\n";
 		}
 
-		return 'Usage: ' . $this->make_usage() . "\n" . $desc . $this->make_options_block() . $this->make_params_block();
+		return 'Usage: ' . $this->make_usage() . "\n" . $desc
+			. $this->make_options_block()
+			. $this->make_params_block()
+			. $this->make_commands_block();
 	}
 
 	public function make_usage($script_name = null)
@@ -112,7 +115,7 @@ class Usage
 
 			$lines[] = array($term, $title);
 		}
-		return $this->make_definition_list($lines, 'OPTIONS');
+		return $this->make_definition_list($lines, $this->long_descriptions ? 'OPTIONS' : '');
 	}
 
 	public function make_params_block()
@@ -122,9 +125,23 @@ class Usage
 		foreach($this->get_items_by_visibility(__NAMESPACE__.'\Config_Param') as $param)
 		{
 			$title = $this->format_description($param->description);
-			$lines[] = array($param->name, $title);
+			$lines[] = array('<'.$param->name.'>', $title);
 		}
+		if(count($lines) == 1 && $param->use_for_commands)
+			$lines = array();
 		return $this->make_definition_list($lines, 'PARAMETERS');
+	}
+
+	public function make_commands_block()
+	{
+		$lines = array();
+		foreach($this->config->get_branches() as $config)
+		{
+			$usage = new Usage($config);
+			$title = $this->format_description($config->description);
+			$lines[] = array($usage->make_usage(), $title);
+		}
+		return $this->make_definition_list($lines, 'COMMANDS');
 	}
 
 	private function make_definition_list($lines, $title)
@@ -147,7 +164,9 @@ class Usage
 		if(!$this->long_descriptions)
 			$column_offset += $max_length;
 
-		$text = "\n$title\n";
+		$text = "\n";
+		if($title != '')
+			$text .= "$title\n";
 		foreach($lines as $row)
 		{
 			$line = $this->wrap($row[0], $this->term_padding_left, true);

@@ -61,9 +61,6 @@ exit;
 ?>
 Usage: basic_options.php [-dtn] [options] <number>
 
-Takes a number and multiplies it.
-
-OPTIONS
   -d, --double  Multiply the number by 2
   -t, --triple  Multiply the number by 3
   -n, --negate  Change sign of the number

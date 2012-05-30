@@ -43,8 +43,7 @@ Too many arguments
 
 Usage: errors_003_too_many_params.php [--help] <x>
 
-OPTIONS
   --help  Show descriptions of options and params
 
 PARAMETERS
-  x
+  <x>

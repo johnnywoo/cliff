@@ -515,4 +515,14 @@ class Config
 	{
 		return isset($this->branches[$name]) ? $this->branches[$name] : null;
 	}
+
+	/**
+	 * Returns all configured branches
+	 *
+	 * @return Config[]
+	 */
+	public function get_branches()
+	{
+		return $this->branches;
+	}
 }

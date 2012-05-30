@@ -34,12 +34,12 @@ include __DIR__ . '/../examples/commands.php';
 --EXPECT--
 Usage: example_commands_001_usage.php [-r] [--roman] [--precision=...] [--help] <command>
 
-A simple calculator with subcommands
-
-OPTIONS
   -r, --roman      Output results in Roman numerals
   --precision=...  Output results with given precision
   --help           Show descriptions of options and params
 
-PARAMETERS
-  command  Available commands: add, subtract
+COMMANDS
+  add [--help] <summands>
+    Add any numbers together
+  subtract [--help] <minuend> <subtrahend>
+    Subtract a number from another number

@@ -34,9 +34,6 @@ include __DIR__ . '/../examples/options.php';
 --EXPECT--
 Usage: example_options_001_usage.php [-dtn] [options] <number>
 
-Takes a number and multiplies it.
-
-OPTIONS
   -d, --double  Multiply the number by 2
   -t, --triple  Multiply the number by 3
   -n, --negate  Change sign of the number
@@ -45,4 +42,4 @@ OPTIONS
   --help        Show descriptions of options and params
 
 PARAMETERS
-  number  A number to operate on
+  <number>  A number to operate on

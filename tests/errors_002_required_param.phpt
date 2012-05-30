@@ -44,9 +44,8 @@ Need more arguments
 
 Usage: errors_002_required_param.php [--help] <x> <y>
 
-OPTIONS
   --help  Show descriptions of options and params
 
 PARAMETERS
-  x
-  y
+  <x>
+  <y>

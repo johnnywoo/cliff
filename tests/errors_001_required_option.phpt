@@ -45,6 +45,5 @@ Need value for -x
 
 Usage: errors_001_required_option.php [-x ...] [--help]
 
-OPTIONS
   -x ...  Whatever
   --help  Show descriptions of options and params
