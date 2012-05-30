@@ -329,10 +329,11 @@ class Config
 			$this->param('command', array('use_for_commands' => true));
 
 		Cliff::add_default_options($config);
-		$config->script_name($param_value);
 
 		$aliases = preg_split('/\s+/', $param_value, -1, PREG_SPLIT_NO_EMPTY);
 		$name = reset($aliases);
+
+		$config->script_name($name);
 
 		$this->branches[$name] = $config;
 		foreach($aliases as $alias)
