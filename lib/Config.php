@@ -36,7 +36,7 @@ require_once __DIR__.'/Config/Option.php';
  * Config options:
  * ->flag(names, props)         # <script> --verbose
  * ->option(names, props)       # <script> --db=...
- * ->many_options(names, props) # <script> --exclude file --exclude file2
+ * ->many_options(names, props) # <script> --exclude=file --exclude=file2
  * ->param(name, props)         # <script> file
  * ->many_params(name, props)   # <script> file file2 file3
  * ->desc(text)
