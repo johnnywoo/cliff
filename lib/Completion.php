@@ -175,7 +175,7 @@ class Completion
 		// the completion options can contain many comp-words. For correct completion
 		// to work, we need to find the last wordbreak and remove everything before it
 		// from our options, leaving only the last comp-word.
-		$prefix = $arg->get_last_word($comp_wordbreaks);
+		$prefix = $arg->get_arg_tail($comp_wordbreaks);
 		$force_prefix = ($prefix != $arg->arg);
 
 		foreach($options as $k=>$variant)
