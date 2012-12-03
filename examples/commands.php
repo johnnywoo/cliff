@@ -95,7 +95,8 @@ if($is_roman)
 	if(!class_exists('Numbers_Roman'))
 		throw new Exception('You need Numbers_Roman from PEAR to output results as Roman numerals');
 
-	echo Numbers_Roman::toNumeral(intval($result))."\n";
+	$nr = new Numbers_Roman();
+	echo $nr->toNumeral(intval($result))."\n";
 }
 else
 {
