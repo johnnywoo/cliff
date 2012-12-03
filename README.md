@@ -16,8 +16,12 @@ you don't even have to describe anything.
 
 ## DISCLAIMER
 
-Version: 0.2 alpha. Things may be severely broken; I didn't get the chance to use it in
-production yet.
+Version: 0.2 alpha. It appears to be working properly here, though.
+
+What Cliff is not: it is not a getopt library. It may be overkill to use Cliff for
+simplistic cron jobs. What Cliff is for is large tools which you are using a lot, like
+CLI versions of extensive projects, data mining tools, etc. If you crave for smart bash
+completion, Cliff is the right tool for you.
 
 ## HOWTO
 
@@ -36,7 +40,6 @@ A short example:
     {
         echo "$arg\n";
     }
-    ?>
 
 This little script will take arbitrary number of arguments and output each of them
 on a separate line. Now, if you want to add an option to uppercase the arguments
@@ -59,7 +62,6 @@ before outputting them, it can be done quite easily:
 
         echo "$arg\n";
     }
-    ?>
 
 Now our script may be called as `php script.php -u abc def`. If called without arguments
 or with incorrect ones, the script will show a short description of available options and
