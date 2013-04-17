@@ -170,7 +170,7 @@ class Usage
 		foreach($lines as $row)
 		{
 			$line = $this->wrap($row[0], $this->term_padding_left, true);
-			if(strlen($row[0]) > $max_length || $this->is_help_mode)
+			if(($row[1] != '' && strlen($row[0]) > $max_length) || $this->is_help_mode)
 			{
 				// long desc/long param summary: make an indent on the next line
 				$line .= "\n".str_repeat(' ', $column_offset);
