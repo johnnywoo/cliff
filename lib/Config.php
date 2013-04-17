@@ -147,6 +147,7 @@ class Config
 	public function script_name($script_name)
 	{
 		$this->script_name = $script_name;
+		$this->is_custom_script_name = true;
 		return $this;
 	}
 
@@ -358,6 +359,7 @@ class Config
 	public $description = '';
 	public $allow_unknown_options = '';
 	public $script_name = '';
+	public $is_custom_script_name = false;
 
 	/**
 	 * @var Config_Item[]
@@ -375,11 +377,6 @@ class Config
 	public function get_items()
 	{
 		return $this->items;
-	}
-
-	public function get_script_name()
-	{
-		return $this->script_name;
 	}
 
 	/**

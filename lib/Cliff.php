@@ -56,7 +56,7 @@ class Cliff
 			$config = static::get_default_config();
 
 		if($config->script_name == '')
-			$config->script_name(basename($_SERVER['argv'][0]));
+			$config->script_name = basename($_SERVER['argv'][0]);
 
 		$request = new Request();
 
@@ -126,7 +126,7 @@ class Cliff
 
 				To enable bash completion, you should place the following in your '.Completion::guess_bash_profile_name().' (all on one line):
 
-				'.Completion::make_profile_command(),
+				'.Completion::make_profile_command($config->is_custom_script_name ? $config->script_name : 'your_alias'),
 
 				'visibility' => Config::V_HELP,
 				'callback' => function($alias) {

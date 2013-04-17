@@ -245,9 +245,11 @@ class Completion
 		echo 'complete -o bashdefault -o default -o nospace -F ' . $funcname . ' ' . escapeshellarg($alias) . "\n";
 	}
 
-	public static function make_profile_command()
+	public static function make_profile_command($script_name)
 	{
-		return 'eval "$(' . static::get_php_command() . ' ' . escapeshellarg(static::get_script_filename()) . ' --cliff-bash-profile=your_alias)"';
+		return 'eval "$(' . static::get_php_command()
+			. ' ' . escapeshellarg(static::get_script_filename())
+			. ' --cliff-bash-profile=' . escapeshellarg($script_name) . ')"';
 	}
 
 	public static function guess_bash_profile_name()
