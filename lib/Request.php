@@ -53,6 +53,7 @@ class Request
 	public $params_stack  = array();
 
 	protected $registered_items = array();
+	protected $defaults_lookup  = array();
 
 	/** @var array */
 	private $target;
@@ -66,6 +67,7 @@ class Request
 		$short_options_with_values = $this->config->get_short_options_with_values();
 
 		$this->registered_items = array();
+		$this->defaults_lookup  = array();
 		$this->options       = $this->config->get_options();
 		$this->params_stack  = $this->config->get_params();
 
@@ -101,6 +103,8 @@ class Request
 			$value = $item->default;
 			// absent value should not be wrapped in array
 			$is_array = false;
+
+            $this->defaults_lookup[$name] = true;
 		}
 		else
 		{
@@ -112,6 +116,12 @@ class Request
 		{
 			if(!isset($this->target[$name]) || !is_array($this->target[$name]))
 				$this->target[$name] = array();
+
+            // if default value is an array, we need to clean it up before inserting actual first value
+            if(!empty($this->defaults_lookup[$name])) {
+                $this->target[$name] = array();
+                unset($this->defaults_lookup[$name]);
+            }
 
 			$this->target[$name][] = $value;
 		}
