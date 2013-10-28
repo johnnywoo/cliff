@@ -70,7 +70,7 @@ Usage: basic_options.php [-dtn] [options] <number>
 
 PARAMETERS
   number  A number to operate on
-<?
+<?php
 
 
 // and --help will be a bit more sparse:
