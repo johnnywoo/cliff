@@ -5,3 +5,4 @@
 /tests/*.log
 /tests/*.out
 /tests/*.php
+/vendor
