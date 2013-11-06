@@ -29,17 +29,17 @@ License along with Cliff. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-include __DIR__ . '/../lib/Cliff.php';
-use cliff\Cliff;
+include __DIR__ . '/../lib/Cliff/Cliff.php';
+use Cliff\Cliff;
 
 Cliff::run(
-	Cliff::config()
-	->option('--val', array('flag_value' => 'ZZZ'))
-	->option('--def', array('flag_value' => 'ZZZ'))
-	->option('--absent', array('flag_value' => 'NO WAI', 'default' => 'YA RLY'))
-	->option('--req-val', array('flag_value' => 'ZZZ', 'is_required' => true))
-	->option('--req-def', array('flag_value' => 'ZZZ', 'is_required' => true))
-	// absence of a required option will cause an error
+    Cliff::config()
+    ->option('--val', array('flagValue' => 'ZZZ'))
+    ->option('--def', array('flagValue' => 'ZZZ'))
+    ->option('--absent', array('flagValue' => 'NO WAI', 'default' => 'YA RLY'))
+    ->option('--req-val', array('flagValue' => 'ZZZ', 'isRequired' => true))
+    ->option('--req-def', array('flagValue' => 'ZZZ', 'isRequired' => true))
+    // absence of a required option will cause an error
 );
 
 var_dump($_REQUEST);

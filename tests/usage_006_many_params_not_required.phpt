@@ -28,14 +28,14 @@ License along with Cliff. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-include __DIR__ . '/../lib/Cliff.php';
-use cliff\Cliff;
+include __DIR__ . '/../lib/Cliff/Cliff.php';
+use Cliff\Cliff;
 
 Cliff::run(
-	Cliff::config()
-	->many_params('x', array(
-		'is_required' => false,
-	))
+    Cliff::config()
+    ->manyParams('x', array(
+        'isRequired' => false,
+    ))
 );
 
 echo 'OK';

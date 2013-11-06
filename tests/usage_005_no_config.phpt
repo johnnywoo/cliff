@@ -29,9 +29,9 @@ License along with Cliff. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-include __DIR__ . '/../lib/Cliff.php';
+include __DIR__ . '/../lib/Cliff/Cliff.php';
 
-cliff\Cliff::run();
+Cliff\Cliff::run();
 
 var_dump($_REQUEST);
 

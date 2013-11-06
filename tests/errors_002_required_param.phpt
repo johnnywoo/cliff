@@ -29,13 +29,13 @@ License along with Cliff. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-include __DIR__ . '/../lib/Cliff.php';
-use cliff\Cliff;
+include __DIR__ . '/../lib/Cliff/Cliff.php';
+use Cliff\Cliff;
 
 Cliff::run(
-	Cliff::config()
-	->param('x')
-	->param('y')
+    Cliff::config()
+    ->param('x')
+    ->param('y')
 );
 
 ?>

@@ -6,17 +6,16 @@
  * Usage: script 1 2 3
  */
 
-require_once __DIR__.'/../lib/Cliff.php';
-use \cliff\Cliff;
+require_once __DIR__ . '/../lib/Cliff/Cliff.php';
+use \Cliff\Cliff;
 
 Cliff::run(
-	Cliff::config()
-	->many_params('lines', array(
-		'Strings to be echoed',
-	))
+    Cliff::config()
+    ->manyParams('lines', array(
+        'Strings to be echoed',
+    ))
 );
 
-foreach($_REQUEST['lines'] as $arg)
-{
-	echo "$arg\n";
+foreach ($_REQUEST['lines'] as $arg) {
+    echo "$arg\n";
 }

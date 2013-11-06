@@ -31,25 +31,25 @@ License along with Cliff. If not, see <http://www.gnu.org/licenses/>.
 require_once __DIR__ . '/_functions.inc';
 
 echo "  empty\n";
-draw_parser('');
+drawParser('');
 
 echo "  one param\n";
-draw_parser('a');
+drawParser('a');
 
 echo "  short options\n";
-draw_parser('-a -bc -dVV -d VV blah', 'd');
+drawParser('-a -bc -dVV -d VV blah', 'd');
 
 echo "  long options\n";
-draw_parser('--a --a-a-a --x=1 --x1 --x 1', 'd');
+drawParser('--a --a-a-a --x=1 --x1 --x 1', 'd');
 
 echo "  mixed options\n";
-draw_parser('-a --b -cd --e=f -g h --x', 'g');
+drawParser('-a --b -cd --e=f -g h --x', 'g');
 
 echo "  options after params\n";
-draw_parser('-x --a P --a -x');
+drawParser('-x --a P --a -x');
 
 echo "  double dash\n";
-draw_parser('-x --a -- --a -x');
+drawParser('-x --a -- --a -x');
 
 ?>
 --EXPECT--

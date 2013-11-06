@@ -29,8 +29,8 @@ License along with Cliff. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-include __DIR__ . '/../lib/Cliff.php';
-use cliff\Cliff;
+include __DIR__ . '/../lib/Cliff/Cliff.php';
+use Cliff\Cliff;
 
 // empty config mode: no params/options are accepted except Cliff standard ones
 Cliff::run(Cliff::config());

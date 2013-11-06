@@ -1,10 +1,17 @@
 {
     "name": "johnnywoo/cliff",
-    "minimum-stability": "dev",
+    "description": "CLI framework",
     "require": {
         "php": ">=5.3.0"
     },
+    "license": "LGPL",
+    "authors": [{
+        "name": "Aleksandr Galkin",
+        "email": "agalkin@agalkin.ru"
+    }],
     "autoload": {
-        "files": ["lib/Cliff.php"]
+        "psr-0": {
+            "Cliff": "lib"
+        }
     }
 }

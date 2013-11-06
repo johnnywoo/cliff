@@ -11,67 +11,69 @@
  * Based on phpunit 3.5.13.
  */
 
-require_once __DIR__.'/../lib/Cliff.php';
-use \cliff\Cliff;
+require_once __DIR__ . '/../lib/Cliff/Cliff.php';
+use \Cliff\Cliff;
 
-function getGroups() {
-	exec("phpunit --list-groups | grep '-' | grep -v '__nogroup__' | cut -d ' ' -f3 2>/dev/null", $out, $err);
-	if(!$err) {
-		return array_map('trim', $out);
-	}
+function getGroups()
+{
+    exec("phpunit --list-groups | grep '-' | grep -v '__nogroup__' | cut -d ' ' -f3 2>/dev/null", $out, $err);
+    if (!$err) {
+        return array_map('trim', $out);
+    }
+    return array();
 }
 
 Cliff::run(
-	Cliff::config()
-	->desc('Bash completion script for phpunit 3.7.19')
+    Cliff::config()
+    ->desc('Bash completion script for phpunit 3.7.19')
 
-	->option('--log-junit')
-	->option('--log-tap')
-	->option('--log-json')
+    ->option('--log-junit')
+    ->option('--log-tap')
+    ->option('--log-json')
 
-	->option('--coverage-html')
-	->option('--coverage-clover')
-	->option('--coverage-php')
-	->option('--coverage-text')
+    ->option('--coverage-html')
+    ->option('--coverage-clover')
+    ->option('--coverage-php')
+    ->option('--coverage-text')
 
-	->option('--testdox-html')
-	->option('--testdox-text')
+    ->option('--testdox-html')
+    ->option('--testdox-text')
 
-	->option('--filter')
-	->option('--testsuite')
-	->option('--group', array('completion' => 'getGroups'))
-	->option('--exclude-group', array('completion' => 'getGroups'))
-	->flag('--list-groups')
-	->option('--test-suffix')
+    ->option('--filter')
+    ->option('--testsuite')
+    ->option('--group', array('completion' => 'getGroups'))
+    ->option('--exclude-group', array('completion' => 'getGroups'))
+    ->flag('--list-groups')
+    ->option('--test-suffix')
 
-	->option('--loader')
-	->option('--printer')
-	->option('--repeat')
+    ->option('--loader')
+    ->option('--printer')
+    ->option('--repeat')
 
-	->flag('--tap')
-	->flag('--testdox')
-	->flag('--colors')
-	->flag('--stderr')
-	->flag('--stop-on-error')
-	->flag('--stop-on-failure')
-	->flag('--stop-on-skipped')
-	->flag('--stop-on-incomplete')
-	->flag('--strict')
-	->flag('--verbose -v')
-	->flag('--debug')
+    ->flag('--tap')
+    ->flag('--testdox')
+    ->flag('--colors')
+    ->flag('--stderr')
+    ->flag('--stop-on-error')
+    ->flag('--stop-on-failure')
+    ->flag('--stop-on-skipped')
+    ->flag('--stop-on-incomplete')
+    ->flag('--strict')
+    ->flag('--verbose -v')
+    ->flag('--debug')
 
-	->flag('--skeleton-class')
-	->flag('--skeleton-test')
+    ->flag('--skeleton-class')
+    ->flag('--skeleton-test')
 
-	->flag('--process-isolation')
-	->flag('--no-globals-backup')
-	->flag('--static-backup')
+    ->flag('--process-isolation')
+    ->flag('--no-globals-backup')
+    ->flag('--static-backup')
 
-	->option('--bootstrap')
-	->option('--configuration -c')
-	->flag('--no-configuration')
-	->option('--include-path')
+    ->option('--bootstrap')
+    ->option('--configuration -c')
+    ->flag('--no-configuration')
+    ->option('--include-path')
 
-	->flag('--help')
-	->flag('--version')
+    ->flag('--help')
+    ->flag('--version')
 );

@@ -33,41 +33,41 @@ use cliff\Config;
 use cliff\Completion;
 
 $config = Cliff::config()
-	->flag('--aaa')
-	->flag('--bbb')
-	->flag('--ccc')
+    ->flag('--aaa')
+    ->flag('--bbb')
+    ->flag('--ccc')
 
-	->command('list', Cliff::config()
-		->flag('--aaa')
-		->flag('--bbb')
-	)
+    ->command('list', Cliff::config()
+        ->flag('--aaa')
+        ->flag('--bbb')
+    )
 
-	->command('delete', Cliff::config()
-		->flag('--aaa')
-		->flag('--bbb')
-		->flag('--kkk')
+    ->command('delete', Cliff::config()
+        ->flag('--aaa')
+        ->flag('--bbb')
+        ->flag('--kkk')
 
-		->option('--kraks', array('completion' => array('foo')))
-	)
+        ->option('--kraks', array('completion' => array('foo')))
+    )
 ;
 
 echo "  args\n";
-draw_completon($config, 'x -');
+drawCompleton($config, 'x -');
 
 echo "  one arg\n";
-draw_completon($config, 'x --a');
+drawCompleton($config, 'x --a');
 
 echo "  empty\n";
-draw_completon($config, 'x');
+drawCompleton($config, 'x');
 
 echo "  subcommand options\n";
-draw_completon($config, 'x list -');
+drawCompleton($config, 'x list -');
 // We have --help here and not in the top because the --help can only be attached
 // after we're done with the config, i.e. by Cliff::run() which we don't use in this test.
 // Normally --help will be present in both places.
 
 echo "  subcommand option value\n";
-draw_completon($config, 'x delete --kraks=');
+drawCompleton($config, 'x delete --kraks=');
 
 ?>
 --EXPECT--

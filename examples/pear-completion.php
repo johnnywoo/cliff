@@ -8,8 +8,8 @@
  * Based on PEAR 1.9.2.
  */
 
-require_once __DIR__.'/../lib/Cliff.php';
-use \cliff\Cliff;
+require_once __DIR__ . '/../lib/Cliff/Cliff.php';
+use \Cliff\Cliff;
 
 $commands = "
 build                  Build an Extension From C Source
@@ -62,74 +62,74 @@ upgrade-all            Upgrade All Packages [Deprecated in favor of calling upgr
 help
 ";
 
-function get_commands_list()
+function getCommandsList()
 {
-	global $commands;
-	$list = array();
-	foreach(explode("\n", $commands) as $line)
-	{
-		list($cmd) = explode(' ', $line, 2);
-		if($cmd != '')
-			$list[] = trim($cmd);
-	}
-	return $list;
+    global $commands;
+    $list = array();
+    foreach (explode("\n", $commands) as $line) {
+        list($cmd) = explode(' ', $line, 2);
+        if ($cmd != '') {
+            $list[] = trim($cmd);
+        }
+    }
+    return $list;
 }
 
 Cliff::run(
-	Cliff::config()
-	->desc('Bash completion script for PEAR')
+    Cliff::config()
+    ->desc('Bash completion script for PEAR')
 
-	->flag('-v')
-	->flag('-q')
-	->option('-c') // file    find user configuration in `file'
-	->option('-C') // file    find system configuration in `file'
-	->option('-d') // foo=bar set user config variable `foo' to `bar'
-	->option('-D') // foo=bar set system config variable `foo' to `bar'
-	->flag('-G')
-	->flag('-s')
-	->flag('-S')
-	->option('-u') // foo     unset `foo' in the user configuration
-	->flag('-h -?')
-	->flag('-V')
+    ->flag('-v')
+    ->flag('-q')
+    ->option('-c') // file    find user configuration in `file'
+    ->option('-C') // file    find system configuration in `file'
+    ->option('-d') // foo=bar set user config variable `foo' to `bar'
+    ->option('-D') // foo=bar set system config variable `foo' to `bar'
+    ->flag('-G')
+    ->flag('-s')
+    ->flag('-S')
+    ->option('-u') // foo     unset `foo' in the user configuration
+    ->flag('-h -?')
+    ->flag('-V')
 
-	->param('command', array(
-		'use_for_commands' => true,
-		'validator'        => '/./', // we need to supply this so Cliff won't require an actual defined command name
-		'completion'       => 'get_commands_list',
-	))
+    ->param('command', array(
+        'useForCommands' => true,
+        'validator'      => '/./', // we need to supply this so Cliff won't require an actual defined command name
+        'completion'     => 'getCommandsList',
+    ))
 
-	// making help complete subcommand names
-	->command('help', Cliff::config()
-		->flag('--test')
-		->param('cmd', array(
-			'completion' => 'get_commands_list',
-		))
-	)
+    // making help complete subcommand names
+    ->command('help', Cliff::config()
+        ->flag('--test')
+        ->param('cmd', array(
+            'completion' => 'getCommandsList',
+        ))
+    )
 
-	// More examples of subcommand competion/configuration below.
-	// Unfortunately, the second most useful completion (for `install`)
-	// is not possible: list of all packages is very slow and it is not acceptable
-	// for a background UI operation such as completion.
+    // More examples of subcommand competion/configuration below.
+    // Unfortunately, the second most useful completion (for `install`)
+    // is not possible: list of all packages is very slow and it is not acceptable
+    // for a background UI operation such as completion.
 
-	->command('list', Cliff::config()
-		->option('--channel')
-		->flag('--allchannels')
-		->flag('--channelinfo')
-	)
+    ->command('list', Cliff::config()
+        ->option('--channel')
+        ->flag('--allchannels')
+        ->flag('--channelinfo')
+    )
 
-	->command('upgrade', Cliff::config()
-		->option('--channel')
-		->flag('--force')
-		->flag('--loose')
-		->flag('--nodeps')
-		->flag('--register-only')
-		->flag('--nobuild')
-		->flag('--nocompress')
-		->option('--installroot')
-		->flag('--ignore-errors')
-		->flag('--alldeps')
-		->flag('--onlyreqdeps')
-		->flag('--offline')
-		->flag('--pretend')
-	)
+    ->command('upgrade', Cliff::config()
+        ->option('--channel')
+        ->flag('--force')
+        ->flag('--loose')
+        ->flag('--nodeps')
+        ->flag('--register-only')
+        ->flag('--nobuild')
+        ->flag('--nocompress')
+        ->option('--installroot')
+        ->flag('--ignore-errors')
+        ->flag('--alldeps')
+        ->flag('--onlyreqdeps')
+        ->flag('--offline')
+        ->flag('--pretend')
+    )
 );

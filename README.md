@@ -14,9 +14,12 @@ you work with http request variables: by using `$_REQUEST`. All you need is to d
 options and parameters of your script, and then everything just works. In no-config mode,
 you don't even have to describe anything.
 
-## DISCLAIMER
+## VERSION
 
-Version: 0.2 alpha. It appears to be working properly here, though.
+Current Cliff version is 1.0. It is incompatible with the previous version (0.2) because
+of the new code style, which moved everything to camelCase, breaking the API.
+
+## DISCLAIMER
 
 What Cliff is not: it is not a getopt library. It may be overkill to use Cliff for
 simplistic cron jobs. What Cliff is for is large tools which you are using a lot, like
@@ -31,13 +34,12 @@ and modify to your needs.
 A short example:
 
     <?php
-    require_once 'cliff/lib/Cliff.php';
-    use \cliff\Cliff;
+    require_once 'cliff/lib/Cliff/Cliff.php';
+    use \Cliff\Cliff;
 
-    Cliff::run(Cliff::config()->many_params('lines'));
+    Cliff::run(Cliff::config()->manyParams('lines'));
 
-    foreach($_REQUEST['lines'] as $arg)
-    {
+    foreach ($_REQUEST['lines'] as $arg) {
         echo "$arg\n";
     }
 
@@ -46,19 +48,19 @@ on a separate line. Now, if you want to add an option to uppercase the arguments
 before outputting them, it can be done quite easily:
 
     <?php
-    require_once 'cliff/lib/Cliff.php';
-    use \cliff\Cliff;
+    require_once 'cliff/lib/Cliff/Cliff.php';
+    use \Cliff\Cliff;
 
     Cliff::run(
         Cliff::config()
         ->flag('--uppercase -u') // adds --uppercase and -u as its alias
-        ->many_params('lines')
+        ->manyParams('lines')
     );
 
-    foreach($_REQUEST['lines'] as $arg)
-    {
-        if($_REQUEST['uppercase'])    // this will be FALSE if the flag is not set,
+    foreach ($_REQUEST['lines'] as $arg) {
+        if ($_REQUEST['uppercase']) {    // this will be FALSE if the flag is not set,
             $arg = strtoupper($arg);  // so you don't have to worry about notices
+        }
 
         echo "$arg\n";
     }
@@ -67,7 +69,7 @@ Now our script may be called as `php script.php -u abc def`. If called without a
 or with incorrect ones, the script will show a short description of available options and
 parameters. 'Parameter' in Cliff means any non-option argument.
 
-Read phpdoc comments in `lib/Config.php` for all configuration possibilities.
+Read phpdoc comments in `lib/Cliff/Config.php` for all configuration possibilities.
 
 ### Examples
 
@@ -84,8 +86,8 @@ No-config mode allows you to have your cake and eat it too: you get `$_REQUEST` 
 but don't have to configure anything.
 
     <?php
-    require_once 'cliff/lib/Cliff.php';
-    \cliff\Cliff::run();
+    require_once 'cliff/lib/Cliff/Cliff.php';
+    \Cliff\Cliff::run();
 
     // work with $_REQUEST as you like:
     // -x will become $_REQUEST['x'] == true
@@ -140,7 +142,7 @@ To signal an error in your script, simply throw an exception. It will be caught 
 its message will be displayed into stderr, and the script will exit with non-zero status
 (useful for shell scripting).
 
-To change error exit code, you need to change `Cliff::$error_exit_code`. Default error exit code is 1.
+To change error exit code, you need to change `Cliff::$errorExitCode`. Default error exit code is 1.
 
 ## REQUIREMENTS
 

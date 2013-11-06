@@ -31,13 +31,13 @@ License along with Cliff. If not, see <http://www.gnu.org/licenses/>.
 require_once __DIR__ . '/_functions.inc';
 
 echo "  basic\n";
-draw_tokenizer('a b c', 1);
+drawTokenizer('a b c', 1);
 
 echo "  escaping\n";
-draw_tokenizer('a\ b', 2);
+drawTokenizer('a\ b', 2);
 
 echo "  past escaping\n";
-draw_tokenizer('a\ b', 3);
+drawTokenizer('a\ b', 3);
 
 ?>
 --EXPECT--

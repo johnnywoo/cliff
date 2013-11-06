@@ -30,9 +30,8 @@ License along with Cliff. If not, see <http://www.gnu.org/licenses/>.
 */
 
 require_once __DIR__ . '/_functions.inc';
-use cliff\Parser;
 
-draw_parser(new Parser());
+drawParser(new Cliff\Parser());
 
 ?>
 --EXPECT--

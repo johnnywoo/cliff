@@ -24,11 +24,8 @@ License along with Cliff. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-namespace cliff;
+namespace Cliff;
 
-require_once __DIR__ . '/Item.php';
-
-class Config_Param extends Config_Item
+class Exception extends \Exception
 {
-	public $is_required = true; // default for params
 }

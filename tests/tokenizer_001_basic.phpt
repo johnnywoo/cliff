@@ -32,23 +32,23 @@ require_once __DIR__ . '/_functions.inc';
 
 // simple
 echo "  empty\n";
-draw_tokenizer('');
+drawTokenizer('');
 
 echo "  one arg\n";
-draw_tokenizer('a');
+drawTokenizer('a');
 
 echo "  many args\n";
-draw_tokenizer('-a -bc dVV');
+drawTokenizer('-a -bc dVV');
 
 // whitespace
 echo "  leading space\n";
-draw_tokenizer(' leading');
+drawTokenizer(' leading');
 
 echo "  trailing space\n";
-draw_tokenizer('trailing ');
+drawTokenizer('trailing ');
 
 echo "  many spaces\n";
-draw_tokenizer(' a lot  of   spaces    ');
+drawTokenizer(' a lot  of   spaces    ');
 
 ?>
 --EXPECT--

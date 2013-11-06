@@ -31,22 +31,22 @@ License along with Cliff. If not, see <http://www.gnu.org/licenses/>.
 require_once __DIR__ . '/_functions.inc';
 
 echo "  enclosing\n";
-draw_tokenizer('"double" \'single\'');
+drawTokenizer('"double" \'single\'');
 
 echo "  inline\n";
-draw_tokenizer('--opt="double" --opt=\'single\'');
+drawTokenizer('--opt="double" --opt=\'single\'');
 
 echo "  nested in double\n";
-draw_tokenizer('--opt="\'a\'"');
+drawTokenizer('--opt="\'a\'"');
 
 echo "  nested in single\n";
-draw_tokenizer('--opt=\'"a"\'');
+drawTokenizer('--opt=\'"a"\'');
 
 echo "  empty strings\n";
-draw_tokenizer('"" \'\'');
+drawTokenizer('"" \'\'');
 
 echo "  quotes and spaces\n";
-draw_tokenizer('a b   " c c "   \' d d \'   " "   \' \'');
+drawTokenizer('a b   " c c "   \' d d \'   " "   \' \'');
 
 ?>
 --EXPECT--
