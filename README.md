@@ -214,8 +214,6 @@ E-mail: agalkin@agalkin.ru
 
 Github page: https://github.com/johnnywoo/cliff
 
-Cliff is released under LGPL v3. This means you can use it (as is) in any software,
-including proprietary, but you cannot remove any copyrights from its code, and if
-you change the framework itself, the modified code should be released under (L)GPL as well.
+Cliff is released under MIT license. This means you can do pretty much whatever you want with it.
 
 Copyright 2011 Aleksandr Galkin.
